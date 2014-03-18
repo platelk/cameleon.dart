@@ -93,7 +93,7 @@ class Sdhs {
     });
 
     // Getting Route Method
-    Iterable<MethodMirror> decls =
+    Iterable decls =
         classMirror.declarations.values.where(
                                       (dm) => dm is MethodMirror && dm.isRegularMethod);
     decls.forEach((MethodMirror method) {

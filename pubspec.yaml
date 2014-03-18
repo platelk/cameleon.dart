@@ -1,7 +1,4 @@
 name: sdhs
-version : 0.1.0
-description:
-  Library that provide simple way of creating http application or REST api
+version: 0.1.2
 author: PLATEL Kevin <platel.kevin@gmail.com>
-#dependencies:
-#  unittest: any
+description: Library that provide simple way of creating http application or REST api

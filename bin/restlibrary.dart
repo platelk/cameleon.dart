@@ -1,9 +1,9 @@
-import "../lib/rest.dart";
+import "../lib/Sdhs.dart";
 import "dart:io";
 
 @Route("/")
 class Root {
-    REST rest;
+    Sdhs rest;
 
     Root([this.rest = null]);
 
@@ -69,7 +69,7 @@ class Root {
 }
 
 void main() {
-  REST r = new REST(8080);
+  Sdhs r = new Sdhs(8080);
 
   r.addRoute(new Root(r));
   r.addRouteFile("/index", "../assets/index.html", method: "GET");
