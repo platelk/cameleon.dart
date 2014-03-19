@@ -5,11 +5,12 @@ typedef String FileCallBack(String fileContent);
 class RouteFileObject {
   String file_path;
   File _file;
+  Encoding _encod;
   var _completer;
   FileCallBack _function = null;
   HttpResponse _response;
 
-  RouteFileObject(this.file_path, [this._function]) {
+  RouteFileObject(this.file_path, [this._function, this._encod = ASCII]) {
     this._file = new File(this.file_path);
   }
 
@@ -29,7 +30,7 @@ class RouteFileObject {
   Future<String> call(Iterable<Match> l, HttpRequest r, HttpResponse response) {
     this._completer = new Completer();
     this._response = response;
-    this._file.readAsString().then(this.onReadFile).catchError(this._onFileError);
+    this._file.readAsString(encoding: this._encod).then(this.onReadFile).catchError(this._onFileError);
     return this._completer.future;
   }
 }

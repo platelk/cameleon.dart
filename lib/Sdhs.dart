@@ -3,6 +3,7 @@ library restlib;
 import "dart:io";
 import "dart:async";
 import "dart:mirrors";
+import 'dart:convert';
 
 part 'src/Route.dart';
 part 'src/RouteObject.dart';
@@ -110,18 +111,18 @@ class Sdhs {
     });
   }
 
-  void addRouteFile(String route, String file_name, {String base_path: "", String method: "GET", FileCallback function: null}) {
+  void addRouteFile(String route, String file_name, {String base_path: "", String method: "GET", FileCallback function: null, Encoding encoding: ASCII}) {
     print("Add route [${route}]");
-    this._routes.add(new RouteObject.function(new RegExp(route), method, "", new RouteFileObject(base_path + file_name, function)));
+    this._routes.add(new RouteObject.function(new RegExp(route), method, "", new RouteFileObject(base_path + file_name, function, encoding)));
   }
 
-  void addRouteDir(String route, String dir_path, {String base_path: "", String method: "GET", FileCallback function: null}) {
+  void addRouteDir(String route, String dir_path, {String base_path: "", String method: "GET", FileCallback function: null, Encoding encoding: ASCII}) {
     Directory dir = new Directory(base_path + dir_path);
 
     List<FileSystemEntity> l = dir.listSync(recursive : true);
     for (FileSystemEntity f in l) {
         if (f is File) {
-          this.addRouteFile(route + f.path.substring(dir.path.length), f.path, method : method , function : function);
+          this.addRouteFile(route + f.path.substring(dir.path.length), f.path, method : method , function : function, encoding: encoding);
         }
     }
   }
