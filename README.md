@@ -16,27 +16,26 @@ This library is actually under developpment, please do not use for prodution
 ## Features
 
 Actualy the library provide :
-### Routing
-  * Creating route with `Regexp` dart modul
-  * Creating route bind to a file
-  * Creating route tree bind to a class
-  * Creating route tree bind to a directory
-  * Deleting route
-### Callback
-  * Get url parameter with `Regexp` group
-    ```dart
-      @Route(r'apps/(\w+)')\n
-      String putWordApps(String w) {
-    ```
-  * Get contextual parameter
-    ```dart
-        @Route(r'login/(\w+)/(\w+)', others_param: "Session")
-        String login(String login, String pass, HttpSession session) 
-    ```
-### Http
-  * Handle GET / PUT / DELETE http request
-  * Http Server
-  
+  * Routing
+    * Creating route with `Regexp` dart modul
+    * Creating route bind to a file
+    * Creating route tree bind to a class
+    * Creating route tree bind to a directory
+    * Deleting route
+  * Callback
+    * Get url parameter with `Regexp` group
+      ```dart
+        @Route(r'apps/(\w+)')\n
+        String putWordApps(String w) {
+      ```
+    * Get contextual parameter
+      ```dart
+          @Route(r'login/(\w+)/(\w+)', others_param: "Session")
+          String login(String login, String pass, HttpSession session) 
+      ```
+  * Http
+    * Handle GET / PUT / DELETE http request
+    * Http Server
   
 ## Future
 In the future, more feature will be add
