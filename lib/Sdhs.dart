@@ -21,7 +21,7 @@ class Sdhs {
     this.handleNotFound = this._onHttpHandleNotFound;
   }
 
-  RouteObject _getMatchedObject(HttpRequest request) {
+  static RouteObject _getMatchedObject(HttpRequest request, List<RouteObject> _routes) {
     print("[Sdhs] HttpResquest: ${request.method} - [${request.uri.toString()}] (${request.requestedUri.host} on port ${request.requestedUri.port})");
     String m = request.method;
     String url = request.uri.toString();
@@ -30,19 +30,19 @@ class Sdhs {
     bool have_found = false;
     int idx = -1;
     int max_length = 0;
-    for (int i = 0; i < this._routes.length; i++) {
+    for (int i = 0; i < _routes.length; i++) {
 
-      Iterable<Match> matches = this._routes[i].url.allMatches(url);
+      Iterable<Match> matches = _routes[i].url.allMatches(url);
       for (Match reg_match in matches) {
         String match = reg_match.group(0);
-        if (m == this._routes[i].method && match.length > 0 && match.length > max_length) {
+        if (m == _routes[i].method && match.length > 0 && match.length > max_length) {
           idx = i;
           max_length = match.length;
         }
       }
     }
     if (idx > -1) {
-      return this._routes[idx];
+      return _routes[idx];
     } else {
       return null;
     }
@@ -51,7 +51,7 @@ class Sdhs {
   void _onHttpDataRequest(HttpRequest request) {
     HttpResponse res = request.response;
     void _onComplete() {
-        RouteObject obj = this._getMatchedObject(request);
+        RouteObject obj = _getMatchedObject(request, this._routes);
         print(obj);
         if (obj == null)
           this.handleNotFound(res);
