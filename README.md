@@ -24,15 +24,15 @@ Actualy the library provide :
     * Deleting route
   * Callback
     * Get url parameter with `Regexp` group
-      ```dart
-        @Route(r'apps/(\w+)')\n
-        String putWordApps(String w) {
-      ```
+```dart
+  @Route(r'apps/(\w+)')\n
+  String putWordApps(String w)
+```
     * Get contextual parameter
-      ```dart
-          @Route(r'login/(\w+)/(\w+)', others_param: "Session")
-          String login(String login, String pass, HttpSession session) 
-      ```
+```dart
+  @Route(r'login/(\w+)/(\w+)', others_param: "Session")
+  String login(String login, String pass, HttpSession session) 
+```
   * Http
     * Handle GET / PUT / DELETE http request
     * Http Server
@@ -50,6 +50,6 @@ In the future, more feature will be add
 A young software developper, who loved dart.
   
 ### Information
-Acutaly this library is developped by myself, if you have any idea, amelioration, bug, ... do not hesitate to contact me
+Acutaly this library is developped by myself, if you have any idea, amelioration, bug, ... do not hesitate to contact me.
 G+ : [+Kevin PLATEL](https://plus.google.com/+KévinPlatel)
 Mail : [Kevin PLATEL](platel.kevin@gmail.com)
