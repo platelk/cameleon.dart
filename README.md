@@ -24,14 +24,13 @@ Actualy the library provide :
     * Deleting route
   * Callback
     * Get url parameter with `Regexp` group
+    * Get contextual paramater
 ```dart
+  // Regexp Param
   @Route(r'apps/(\w+)')
   String putWordApps(String w)
-```
 
-    * Get contextual parameter
-    
-```dart
+  // Regexp Param and contextual param
   @Route(r'login/(\w+)/(\w+)', others_param: "Session")
   String login(String login, String pass, HttpSession session) 
 ```
