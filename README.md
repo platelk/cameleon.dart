@@ -25,10 +25,12 @@ Actualy the library provide :
   * Callback
     * Get url parameter with `Regexp` group
 ```dart
-  @Route(r'apps/(\w+)')\n
+  @Route(r'apps/(\w+)')
   String putWordApps(String w)
 ```
+
     * Get contextual parameter
+    
 ```dart
   @Route(r'login/(\w+)/(\w+)', others_param: "Session")
   String login(String login, String pass, HttpSession session) 
