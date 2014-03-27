@@ -81,10 +81,83 @@ class Sdhs {
     response.close();
   }
 
-  void addRoute(var route) {
+  void addRoute(var route, {Session session : null, String routePath : null, String base_url: "", String method : null}) {
+    InstanceMirror im = reflect(route);
+
+    if (im.type is FunctionTypeMirror || route is Symbol) {
+      this.addFunctionRoute(route, session : session, routePath: routePath, base_url: base_url, method : method);
+    } else if (im.type is ClassMirror) {
+      this.addClassRoute(route, session : session, routePath: routePath, base_url: base_url, method : method);
+    }
+  }
+
+  void addFunctionRoute(var route, {Session session : null, String routePath : null, String base_url: "", String method : null}) {
+    MethodMirror m = null;
+    print("Route : ${route}");
+    if (route is Symbol) {
+      currentMirrorSystem().libraries.forEach((k, v) => v.declarations.forEach((k2, v2) {
+        if (v2.simpleName == route) {
+          m = v2;
+        }
+      }));
+    } else {
+        InstanceMirror im = reflect(route);
+        FunctionTypeMirror fn = im.type;
+        m = fn.callMethod;
+    }
+    bool have_found_route = false;
+
+    print(m.metadata);
+    if (m is MethodMirror) {
+      print("m is methodMirror");
+      m.metadata.forEach((metadata) {
+        print(metadata);
+        if (metadata.reflectee is Route) {
+          have_found_route = true;
+          String path = routePath;
+          if (path == null) {
+            path = metadata.reflectee.url.toString();
+          }
+          String met = method;
+          if (met == null) {
+            met = metadata.reflectee.method.toString();
+          }
+          RouteObject r = null;
+          if (m.owner is FunctionTypeMirror) {
+            r = new RouteObject.function(new RegExp(base_url + path), met,
+                                                      metadata.reflectee.others_param,
+                                                      route);
+          } else {
+            r = new RouteObject(new RegExp(base_url + path), met,
+                                          metadata.reflectee.others_param,
+                                          null, m);
+          }
+          print("Add route [${r}]");
+          this._routes.add(r);
+        }
+      });
+      if (have_found_route == false) {
+        RouteObject r = null;
+        print(m.owner);
+        if (m.owner is FunctionTypeMirror) {
+          r = new RouteObject.function(new RegExp(base_url + routePath), method,
+                                                            "",
+                                                            route);
+        } else {
+          r = new RouteObject(new RegExp(base_url + routePath), method,
+                                                  "",
+                                                  null, m);
+        }
+        print("Add route [${r}]");
+        this._routes.add(r);
+      }
+    }
+    print("Adding...");
+  }
+
+  void addClassRoute(var route, {Session session : null, String routePath : null, String base_url: "", String method : null}) {
     InstanceMirror im = reflect(route);
     ClassMirror classMirror = im.type;
-    String base_url = "";
 
 
     classMirror.metadata.forEach((metadata) {
@@ -111,12 +184,12 @@ class Sdhs {
     });
   }
 
-  void addRouteFile(String route, String file_name, {String base_path: "", String method: "GET", FileCallback function: null, Encoding encoding: ASCII}) {
+  void addRouteFile(String route, String file_name, {String base_path: "", String method: "GET", FileCallback function: null, Encoding encoding: ASCII, Session session : null}) {
     print("Add route [${route}]");
-    this._routes.add(new RouteObject.function(new RegExp(route), method, "", new RouteFileObject(base_path + file_name, function, encoding)));
+    this._routes.add(new RouteObject.function(new RegExp(base_path + route), method, "HttpRequest,HttpResponse", new RouteFileObject(base_path + file_name, function, encoding)));
   }
 
-  void addRouteDir(String route, String dir_path, {String base_path: "", String method: "GET", FileCallback function: null, Encoding encoding: ASCII}) {
+  void addRouteDir(String route, String dir_path, {String base_path: "", String method: "GET", FileCallback function: null, Encoding encoding: ASCII, Session session : null}) {
     Directory dir = new Directory(base_path + dir_path);
 
     List<FileSystemEntity> l = dir.listSync(recursive : true);
