@@ -41,12 +41,12 @@ The goal of the library is to be easy to use. you can define your route in many 
 import 'packages/sdhs/Sdhs.dart';
 
 @Route("/test") String my_function() {
-  return "LOOOOL";
+  return "Test, test, this is a test.";
 }
 
 @Route("/nope")
 String other_func() {
-  return "Mdr";
+  return "Nope, is not here";
 }
 
 class R {
