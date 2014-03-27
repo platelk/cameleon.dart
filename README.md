@@ -1,10 +1,10 @@
-# Simplest Dart Http Server 0.1.5
+# Simpliest Dart Http Server 0.1.5
 ## Introduction
 sdhs is a simple http server that provide function to easy create a RESTfull API or a web site.
 This library use the more possible standard API to have the less possible dependancy and use the power of dart.
 
 ## Goal
-The goal of this library is to provide the easyest way to create a HTTP service with dart.
+The goal of this library is to provide the easiest way to create a HTTP service with dart.
 This library use [Mirror API](https://api.dartlang.org/apidocs/channels/stable/#dart-mirrors.Mirror) and [Annotation](https://api.dartlang.org/apidocs/channels/stable/#analyzer/analyzer.Annotation) to provide the less constraint.
 
 ## Warning
@@ -82,6 +82,6 @@ In the future, more feature will be add
 A young software developper, who love dart.
   
 ### Information
-Acutaly this library is developped by myself, if you have any idea, amelioration, bug, ... do not hesitate to contact me.
+Actualy this library is developped by myself, if you have any idea, amelioration, bug, ... do not hesitate to contact me.
 G+ : [+Kevin PLATEL](https://plus.google.com/+KévinPlatel)
 Mail : [Kevin PLATEL](platel.kevin@gmail.com)
