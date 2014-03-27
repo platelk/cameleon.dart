@@ -79,7 +79,7 @@ In the future, more feature will be add
 
 ### Author
 
-A young software developper, who loved dart.
+A young software developper, who love dart.
   
 ### Information
 Acutaly this library is developped by myself, if you have any idea, amelioration, bug, ... do not hesitate to contact me.
