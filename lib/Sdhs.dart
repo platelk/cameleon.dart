@@ -35,7 +35,8 @@ class Sdhs {
       Iterable<Match> matches = _routes[i].url.allMatches(url);
       for (Match reg_match in matches) {
         String match = reg_match.group(0);
-        if (m == _routes[i].method && match.length > 0 && match.length > max_length) {
+        // TODO : change "," by a class member value
+        if (_routes[i].method.split(",").contains(m) && match.length > 0 && match.length > max_length) {
           idx = i;
           max_length = match.length;
         }
@@ -59,7 +60,13 @@ class Sdhs {
           Iterable<Match> l = obj.url.allMatches((request.uri.toString()));
           //print("Match : ${m.groups}");
           obj(l, request, res)
-            ..then((String value) => res.write(value))
+            ..then((value) {
+                if (value is Future) {
+                  value.then((e) => res.write(e));
+                } else {
+                  res.write(value);
+                }
+              })
             ..whenComplete(() => res.close())
             ..catchError((Error) => this.handleNotFound(res));
           //(new Future(() => print("ok"))).catchError(onError)

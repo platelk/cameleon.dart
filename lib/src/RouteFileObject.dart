@@ -16,18 +16,30 @@ class RouteFileObject {
 
   String onReadFile(String file_content) {
     if (this._function != null) {
-      this._completer.complete(this._function(file_content));
+      if (this._completer != null) {
+        this._completer.complete(this._function(file_content));
+      } else {
+        return this._function(file_content);
+      }
     }
-    this._completer.complete(file_content);
+    if (this._completer != null) {
+      this._completer.complete(file_content);
+    }
     return file_content;
   }
 
   String onReadBytesFile(List<int> content) {
     String file_content = new String.fromCharCodes(content);
     if (this._function != null) {
-          this._completer.complete(this._function(file_content));
+          if (this._completer != null) {
+            this._completer.complete(this._function(file_content));
+          } else {
+            return this._function(file_content);
+          }
         }
-    this._completer.complete(file_content);
+    if (this._completer != null) {
+      this._completer.complete(file_content);
+    }
     return file_content;
   }
 
@@ -37,6 +49,15 @@ class RouteFileObject {
     this._completer.complete("404 not Found");
   }
 
+  String getFile() {
+    print("RouteFileObject call [${this._file}]");
+    if (this._encod != null) {
+      return this.onReadFile(this._file.readAsStringSync(encoding: this._encod));
+    } else {
+      return this.onReadBytesFile(this._file.readAsBytesSync());
+    }
+  }
+
   Future<String> call(HttpRequest r, HttpResponse response) {
     print("RouteFileObject call [${this._file}]");
     this._completer = new Completer();
@@ -44,6 +65,7 @@ class RouteFileObject {
     if (this._encod != null) {
       this._file.readAsString(encoding: this._encod).then(this.onReadFile).catchError(this._onFileError);
     } else {
+      print("Read as byte");
       this._file.readAsBytes().then(this.onReadBytesFile).catchError(this._onFileError);
     }
     return this._completer.future;

@@ -20,7 +20,17 @@ class RouteObject {
 
   String toString() => "Route: ${this.method} - [${this.url}] -> ${this.callBackFunction}";
 
-  Future<String> call(Iterable<Match> l, HttpRequest r, HttpResponse response) {
+  Future _callFunction(List arg) {
+    if (this._function != null) {
+          return new Future(() => Function.apply(this._function, arg));
+    }
+    if (this._objectInstance == null) {
+          return new Future (() => (this.callBackFunction.owner).invoke(this.callBackFunction.simpleName, arg).reflectee);
+    }
+    return new Future(() => this._objectInstance.invoke(this.callBackFunction.simpleName, arg).reflectee);
+  }
+
+  Future call(Iterable<Match> l, HttpRequest r, HttpResponse response) {
     List arg = new List();
     print(reflect(this.callBackFunction).runtimeType);
     for (Match m in l) {
@@ -49,15 +59,11 @@ class RouteObject {
           arg.add(response);
         } else if (k == "Session") {
           arg.add(r.session);
+        } else if (k == "Data") {
+          // TODO : getting POST and GET Data
         }
       }
     }
-    if (this._function != null) {
-      return new Future(() => Function.apply(this._function, arg));
-    }
-    if (this._objectInstance == null) {
-      return new Future (() => (this.callBackFunction.owner).invoke(this.callBackFunction.simpleName, arg).reflectee);
-    }
-    return new Future(() => this._objectInstance.invoke(this.callBackFunction.simpleName, arg).reflectee);
+    return this._callFunction(arg);
   }
 }
