@@ -193,7 +193,8 @@ class Sdhs {
 
   void addRouteFile(String route, String file_name, {String base_path: "", String method: "GET", FileCallback function: null, Encoding encoding: ASCII, Session session : null}) {
     print("Add route [${route}]");
-    this._routes.add(new RouteObject.function(new RegExp(base_path + route), method, "HttpRequest,HttpResponse", new RouteFileObject(base_path + file_name, function, encoding)));
+    String r = (base_path + route).replaceAll("\\", "/");
+    this._routes.add(new RouteObject.function(new RegExp(r), method, "HttpRequest,HttpResponse", new RouteFileObject(base_path + file_name, function, encoding)));
   }
 
   void addRouteDir(String route, String dir_path, {String base_path: "", String method: "GET", FileCallback function: null, Encoding encoding: ASCII, Session session : null}) {
