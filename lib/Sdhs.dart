@@ -9,18 +9,20 @@ part 'src/Route.dart';
 part 'src/RouteObject.dart';
 part 'src/RouteFileObject.dart';
 
+typedef String NotFoundHandler(HttpResponse);
+
 class Sdhs {
+  String _version = "0.2.1";
   int port;
   String ip = "0.0.0.0";
   List<RouteObject> _routes;
-  var handleNotFound = null;
+  NotFoundHandler handleNotFound = (v) => "404 not found.";
   bool _debugMode = false;
   int _debugModeLevel = 0;
   
   Sdhs([this.port = 80, this.ip = "0.0.0.0"]) {
     this._routes = new List<RouteObject>();
     print("[Sdhs] Sdhs Object created.");
-    this.handleNotFound = this._onHttpHandleNotFound;
   }
 
   void _printDebug(data, {int level : 0}) {
@@ -56,30 +58,40 @@ class Sdhs {
       return null;
     }
   }
+  
+  HttpResponse _setHttpResponse(HttpResponse res) {
+    res.headers.set(HttpHeaders.SERVER, "Sdhs/" + this._version);
+    res.headers.date = new DateTime.now();
+    return res;
+  }
 
+  void _writeValue(var value, HttpResponse res) {
+    if (value is Future) {
+       value.then((e) => res.write(e));
+    } else {
+       res.write(value);
+    }
+    res.close();
+  }
+  
   void _onHttpDataRequest(HttpRequest request) {
     _printDebug("HttpRequest receive", level: 1);
     _printDebug("request: ${request}", level: 2);
-    HttpResponse res = request.response;
+    HttpResponse res = this._setHttpResponse(request.response);
     void _onComplete() {
         RouteObject obj = _getMatchedObject(request, this._routes);
         _printDebug(obj);
         if (obj == null)
-          this.handleNotFound(res);
+          this._onHttpHandleNotFound(res);
         else {
           Iterable<Match> l = obj.url.allMatches((request.uri.toString()));
           //print("Match : ${m.groups}");
           obj(l, request, res)
             ..then((value) {
-                if (value is Future) {
-                  value.then((e) => res.write(e));
-                } else {
-                  res.write(value);
-                }
+                  this._writeValue(value, res);
               })
             ..whenComplete(() => res.close())
-            ..catchError((Error) => this.handleNotFound(res));
-          //(new Future(() => print("ok"))).catchError(onError)
+            ..catchError((Error) => this._onHttpHandleNotFound(res));
         }
         return ;
     }
@@ -94,8 +106,11 @@ class Sdhs {
   void _onHttpHandleNotFound(HttpResponse response) {
     _printDebug("[Sdhs] HttpNotFound !");
     response.statusCode = HttpStatus.NOT_FOUND;
-    response.write("404 Not Found.");
-    response.close();
+    this._writeValue(this.handleNotFound(response), response);
+  }
+  
+  void  setNotFoundhandler(NotFoundHandler f) {
+    this.handleNotFound = f;
   }
 
   /**
@@ -107,7 +122,7 @@ class Sdhs {
    * ##Note
    * If [routePath] is not provide, the annotion [Route] will be used to create the routing. if it is provide, it will erase the route provide by the annotation
    */
-  void addRoute(var route, {Session session : null, String routePath : null, String base_url: "", String method : null, String other_param: ""}) {
+  void addRoute(var route, {HttpSession session : null, String routePath : null, String base_url: "", String method : null, String other_param: ""}) {
     InstanceMirror im = reflect(route);
 
     if (im.type is FunctionTypeMirror || route is Symbol) {
@@ -117,7 +132,7 @@ class Sdhs {
     }
   }
 
-  void addFunctionRoute(var route, {Session session : null, String routePath : null, String base_url: "", String method : null, String other_param: ""}) {
+  void addFunctionRoute(var route, {HttpSession session : null, String routePath : null, String base_url: "", String method : null, String other_param: ""}) {
     MethodMirror m = null;
     _printDebug("Route : ${route}");
     if (route is Symbol) {
@@ -180,7 +195,7 @@ class Sdhs {
     }
   }
 
-  void addClassRoute(var route, {Session session : null, String routePath : null, String base_url: "", String method : null, String other_param: ""}) {
+  void addClassRoute(var route, {HttpSession session : null, String routePath : null, String base_url: "", String method : null, String other_param: ""}) {
     InstanceMirror im = reflect(route);
     ClassMirror classMirror = im.type;
 
@@ -214,7 +229,7 @@ class Sdhs {
    * The FileCallBack param is a function that will be call when the entire file has been read, and the content will be pass to the function.
    * Note : the entire file will be send
    */
-  void addRouteFile(String route, String file_name, {String base_path: "", String method: "GET", String other_param: "", FileCallback function: null, Encoding encoding: null, Session session : null}) {
+  void addRouteFile(String route, String file_name, {String base_path: "", String method: "GET", String other_param: "", FileCallback function: null, Encoding encoding: null, HttpSession session : null}) {
     _printDebug("Add route [${route}]", level: 1);
     String r = (base_path + route).replaceAll("\\", "/");
     this._routes.add(new RouteObject.function(new RegExp(r), method, "HttpRequest,HttpResponse", new RouteFileObject(base_path + file_name, function, encoding)));
@@ -224,7 +239,7 @@ class Sdhs {
    * Bind all the file content in a directory.
    * The [addRouteDir] will call [addRouteFile] on each file present in the directory
    */
-  void addRouteDir(String route, String dir_path, {String base_path: "", bool recursive : true, String method: "GET", String other_param: "", FileCallback function: null, Encoding encoding: null, Session session : null}) {
+  void addRouteDir(String route, String dir_path, {String base_path: "", bool recursive : true, String method: "GET", String other_param: "", FileCallback function: null, Encoding encoding: null, HttpSession session : null}) {
     Directory dir = new Directory(base_path + dir_path);
 
     List<FileSystemEntity> l = dir.listSync(recursive : recursive);
@@ -242,6 +257,11 @@ class Sdhs {
     this._routes.removeWhere((RouteObject r) {
       return r.url.hasMatch(route);
     });
+  }
+  
+  void setDebug(bool s, {int level: 0}) {
+    this._debugMode = s;
+    this._debugModeLevel = level;
   }
 
   /**

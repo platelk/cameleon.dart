@@ -57,7 +57,7 @@ class RouteObject {
           arg.add(r);
         } else if (k == "HttpResponse") {
           arg.add(response);
-        } else if (k == "Session") {
+        } else if (k == "HttpÔSession") {
           arg.add(r.session);
         } else if (k == "Data") {
           // TODO : getting POST and GET Data

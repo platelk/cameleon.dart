@@ -1,4 +1,4 @@
-part of restlib;
+part of sdhs;
 
 typedef String FileCallBack(String fileContent);
 
