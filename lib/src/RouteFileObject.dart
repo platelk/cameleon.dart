@@ -2,6 +2,9 @@ part of restlib;
 
 typedef String FileCallBack(String fileContent);
 
+/**
+ * [RouteFileObject] is a create by a call to [Sdhs.addFileRoute]
+ */
 class RouteFileObject {
   String file_path;
   File _file;

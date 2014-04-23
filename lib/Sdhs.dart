@@ -1,4 +1,4 @@
-library restlib;
+library sdhs;
 
 import "dart:io";
 import "dart:async";
@@ -14,15 +14,23 @@ class Sdhs {
   String ip = "0.0.0.0";
   List<RouteObject> _routes;
   var handleNotFound = null;
-
+  bool _debugMode = false;
+  int _debugModeLevel = 0;
+  
   Sdhs([this.port = 80, this.ip = "0.0.0.0"]) {
     this._routes = new List<RouteObject>();
     print("[Sdhs] Sdhs Object created.");
     this.handleNotFound = this._onHttpHandleNotFound;
   }
 
-  static RouteObject _getMatchedObject(HttpRequest request, List<RouteObject> _routes) {
-    print("[Sdhs] HttpResquest: ${request.method} - [${request.uri.toString()}] (${request.requestedUri.host} on port ${request.requestedUri.port})");
+  void _printDebug(data, {int level : 0}) {
+    if (this._debugMode && this._debugModeLevel <= level) {
+      print(data);
+    }
+  }
+  
+  RouteObject _getMatchedObject(HttpRequest request, List<RouteObject> _routes) {
+    _printDebug("[Sdhs] HttpResquest: ${request.method} - [${request.uri.toString()}] (${request.requestedUri.host} on port ${request.requestedUri.port})");
     String m = request.method;
     String url = request.uri.toString();
     HttpResponse res = request.response;
@@ -50,10 +58,12 @@ class Sdhs {
   }
 
   void _onHttpDataRequest(HttpRequest request) {
+    _printDebug("HttpRequest receive", level: 1);
+    _printDebug("request: ${request}", level: 2);
     HttpResponse res = request.response;
     void _onComplete() {
         RouteObject obj = _getMatchedObject(request, this._routes);
-        print(obj);
+        _printDebug(obj);
         if (obj == null)
           this.handleNotFound(res);
         else {
@@ -78,17 +88,26 @@ class Sdhs {
   }
 
   void _onHttpError() {
-    print("[Sdhs] HttpError!");
+    _printDebug("[Sdhs] HttpError!");
   }
 
   void _onHttpHandleNotFound(HttpResponse response) {
-    print("[Sdhs] HttpNotFound !");
+    _printDebug("[Sdhs] HttpNotFound !");
     response.statusCode = HttpStatus.NOT_FOUND;
     response.write("404 Not Found.");
     response.close();
   }
 
-  void addRoute(var route, {Session session : null, String routePath : null, String base_url: "", String method : null}) {
+  /**
+   * Bind a function or a class to [routePath] route
+   * The route object can be a function ([addFunctionRoute] will be call) or a class instance ([addClassRoute] will be call)
+   * [base_url] will be concat with [routePath]
+   * A route can be add only for a session by passing a [Session] in [session] parameter
+   * 
+   * ##Note
+   * If [routePath] is not provide, the annotion [Route] will be used to create the routing. if it is provide, it will erase the route provide by the annotation
+   */
+  void addRoute(var route, {Session session : null, String routePath : null, String base_url: "", String method : null, String other_param: ""}) {
     InstanceMirror im = reflect(route);
 
     if (im.type is FunctionTypeMirror || route is Symbol) {
@@ -98,9 +117,9 @@ class Sdhs {
     }
   }
 
-  void addFunctionRoute(var route, {Session session : null, String routePath : null, String base_url: "", String method : null}) {
+  void addFunctionRoute(var route, {Session session : null, String routePath : null, String base_url: "", String method : null, String other_param: ""}) {
     MethodMirror m = null;
-    print("Route : ${route}");
+    _printDebug("Route : ${route}");
     if (route is Symbol) {
       currentMirrorSystem().libraries.forEach((k, v) => v.declarations.forEach((k2, v2) {
         if (v2.simpleName == route) {
@@ -114,11 +133,11 @@ class Sdhs {
     }
     bool have_found_route = false;
 
-    print(m.metadata);
+    _printDebug(m.metadata);
     if (m is MethodMirror) {
-      print("m is methodMirror");
+      _printDebug("m is methodMirror");
       m.metadata.forEach((metadata) {
-        print(metadata);
+        _printDebug(metadata);
         if (metadata.reflectee is Route) {
           have_found_route = true;
           String path = routePath;
@@ -139,7 +158,7 @@ class Sdhs {
                                           metadata.reflectee.others_param,
                                           null, m);
           }
-          print("Add route [${r}]");
+          _printDebug("Add route [${r}]", level: 1);
           this._routes.add(r);
         }
       });
@@ -155,14 +174,13 @@ class Sdhs {
                                                   "",
                                                   null, m);
         }
-        print("Add route [${r}]");
+        _printDebug("Add route [${r}]", level: 1);
         this._routes.add(r);
       }
     }
-    print("Adding...");
   }
 
-  void addClassRoute(var route, {Session session : null, String routePath : null, String base_url: "", String method : null}) {
+  void addClassRoute(var route, {Session session : null, String routePath : null, String base_url: "", String method : null, String other_param: ""}) {
     InstanceMirror im = reflect(route);
     ClassMirror classMirror = im.type;
 
@@ -184,23 +202,32 @@ class Sdhs {
                                       mdata.reflectee.method.toString(),
                                       mdata.reflectee.others_param,
                                       im, method);
-          print("Add route [${r}]");
+          _printDebug("Add route [${r}]", level: 1);
           this._routes.add(r);
         }
       }
     });
   }
 
-  void addRouteFile(String route, String file_name, {String base_path: "", String method: "GET", FileCallback function: null, Encoding encoding: ASCII, Session session : null}) {
-    print("Add route [${route}]");
+  /**
+   * Bind a route to a file.
+   * The FileCallBack param is a function that will be call when the entire file has been read, and the content will be pass to the function.
+   * Note : the entire file will be send
+   */
+  void addRouteFile(String route, String file_name, {String base_path: "", String method: "GET", String other_param: "", FileCallback function: null, Encoding encoding: null, Session session : null}) {
+    _printDebug("Add route [${route}]", level: 1);
     String r = (base_path + route).replaceAll("\\", "/");
     this._routes.add(new RouteObject.function(new RegExp(r), method, "HttpRequest,HttpResponse", new RouteFileObject(base_path + file_name, function, encoding)));
   }
 
-  void addRouteDir(String route, String dir_path, {String base_path: "", String method: "GET", FileCallback function: null, Encoding encoding: ASCII, Session session : null}) {
+  /**
+   * Bind all the file content in a directory.
+   * The [addRouteDir] will call [addRouteFile] on each file present in the directory
+   */
+  void addRouteDir(String route, String dir_path, {String base_path: "", bool recursive : true, String method: "GET", String other_param: "", FileCallback function: null, Encoding encoding: null, Session session : null}) {
     Directory dir = new Directory(base_path + dir_path);
 
-    List<FileSystemEntity> l = dir.listSync(recursive : true);
+    List<FileSystemEntity> l = dir.listSync(recursive : recursive);
     for (FileSystemEntity f in l) {
         if (f is File) {
           this.addRouteFile(route + f.path.substring(dir.path.length), f.path, method : method , function : function, encoding: encoding);
@@ -208,18 +235,23 @@ class Sdhs {
     }
   }
 
+  /**
+   * Remove the route which match with the given parameter
+   */
   void removeRoute(String route) {
     this._routes.removeWhere((RouteObject r) {
       return r.url.hasMatch(route);
     });
   }
 
+  /**
+   * Start the HttpServer
+   */
   void run() {
-    print("[Sdhs] HttpServer listen on ${this.ip}:${this.port}");
+    _printDebug("Run HttpServer");
     HttpServer.bind(this.ip, this.port).then((HttpServer server) {
-      print("Start.");
+      _printDebug("Bind HttpServer.listen.");
       server.listen(this._onHttpDataRequest);
-      print("End.");
     });
   }
 }
