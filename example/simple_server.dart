@@ -15,9 +15,9 @@ String get_data(HttpRequest res, HttpResponse r) {
   return "ok";
 }
 
-@Route("/nope")
-Future<String> other_func() {
-  return new Future(() => "Mdr");
+@Route(r"(.*)")
+Future<String> other_func([String request = "", var a = null]) {
+  return new Future(() => "welcome");
 }
 
 class R {

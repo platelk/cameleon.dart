@@ -25,6 +25,7 @@ class RouteObject {
           return new Future(() => Function.apply(this._function, arg));
     }
     if (this._objectInstance == null) {
+      print(arg);
           return new Future (() => (this.callBackFunction.owner).invoke(this.callBackFunction.simpleName, arg).reflectee);
     }
     return new Future(() => this._objectInstance.invoke(this.callBackFunction.simpleName, arg).reflectee);
@@ -42,7 +43,7 @@ class RouteObject {
 
       // Getting parameter to send to the callback
       for (String g in m.groups(idx_list)) {
-        if (idx[i][0] == "d") {
+        if (i < idx.length && idx[i][0] == "d") {
           arg.add(int.parse(g));
         } else {
           arg.add(g);

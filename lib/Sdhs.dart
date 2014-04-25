@@ -267,7 +267,7 @@ class Sdhs {
   /**
    * Start the HttpServer
    */
-  void run() {
+  void run({server}) {
     _printDebug("Run HttpServer");
     HttpServer.bind(this.ip, this.port).then((HttpServer server) {
       _printDebug("Bind HttpServer.listen.");
