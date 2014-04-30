@@ -1,6 +1,6 @@
 # Simpliest Dart Http Server 0.2.2
 ## Introduction
-sdhs is a simple http server that provide function to easy create a RESTfull API or a web site.
+sdhs is a simple http server that provide function to easy create Http based service like RESTfull API, web site...
 This library use the more possible standard API to have the less possible dependancy and use the power of dart.
 
 ## Goal
@@ -8,7 +8,7 @@ The goal of this library is to provide the easiest way to create a HTTP service 
 This library use [Mirror API](https://api.dartlang.org/apidocs/channels/stable/#dart-mirrors.Mirror) and [Annotation](https://api.dartlang.org/apidocs/channels/stable/#analyzer/analyzer.Annotation) to provide the less constraint.
 
 ## Warning
-This library is actually under developpment, please do not use for prodution
+This library is actually under developpment, please do not use for production
 
 ## Features
 
@@ -19,6 +19,7 @@ Actualy the library provide :
     * Creating route tree bind to a class
     * Creating route tree bind to a directory
     * Deleting route
+    * Add route to a specific HttpSession
   * Callback
     * Get url parameter with `Regexp` group
     * Get contextual paramater
@@ -28,7 +29,7 @@ Actualy the library provide :
   String putWordApps(String w)
 
   // Regexp Param and contextual param
-  @Route(r'login/(\w+)/(\w+)', others_param: "Session")
+  @Route(r'login/(\w+)/(\w+)', others_param: "HttpSession")
   String login(String login, String pass, HttpSession session) 
 ```
   * Http
@@ -61,7 +62,7 @@ void main() {
 
   r.addRouteFile("/index", "../assets/index.html", method: "GET");
   r.addRoute(my_function);
-  r.addRoute(() => "Salut", session: null, routePath: "/other", base_url: "", method : "GET");
+  r.addRoute(() => "Salut", routePath: "/other", method : "GET,POST");
   r.addRoute(#other_func);
   r.addRoute(new R());
   r.run();
@@ -73,8 +74,7 @@ void main() {
 In the future, more feature will be add
   * Getting GET / PUT argument
   * HTTPS
-  * Route depending of a session
-  * HTML template motor
+  * HTML template motor binding depend of extension file
   * ...
 
 ### Author
