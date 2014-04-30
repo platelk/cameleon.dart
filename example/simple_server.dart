@@ -49,7 +49,7 @@ class R {
 void main() {
   Sdhs r = new Sdhs(4242);
 
-  r.addRouteFile("/index", "../assets/index.html", method: "GET");
+  r.addRouteFile("/index", "assets/index.html", method: "GET");
   r.addRoute(get_data);
   r.addRoute(() => "Salut", session: null, routePath: "/other", base_url: "", method : "GET");
   r.addRoute(#other_func);
