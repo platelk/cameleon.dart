@@ -1,4 +1,4 @@
-import 'packages/sdhs/Sdhs.dart';
+import 'packages/sdhs/sdhs.dart';
 import "dart:io";
 import "dart:async";
 

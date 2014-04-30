@@ -1,4 +1,7 @@
 name: sdhs
-version: 0.2.1
-author: PLATEL Kevin <platel.kevin@gmail.com>
-description: Library that provide simple way of creating http application or REST api
+version: 0.2.2
+author:
+  PLATEL Kevin <platel.kevin@gmail.com>
+description:
+  Library that provide simple way of creating http based application
+homepage: https://github.com/platelk/sdhs
