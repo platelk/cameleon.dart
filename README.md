@@ -1,4 +1,4 @@
-# Simpliest Dart Http Server 0.2.2
+# Simpliest Dart Http Server 0.2.3
 ## Introduction
 sdhs is a simple http server that provide function to easy create Http based service like RESTfull API, web site...
 This library use the more possible standard API to have the less possible dependancy and use the power of dart.
@@ -15,6 +15,7 @@ This library is actually under developpment, please do not use for production
 Actualy the library provide :
   * Routing
     * Creating route with `Regexp` dart modul
+    * Support of '/:param' syntax
     * Creating route bind to a file
     * Creating route tree bind to a class
     * Creating route tree bind to a directory
