@@ -13,7 +13,7 @@ typedef String NotFoundHandler(HttpResponse);
 
 class Sdhs {
   static String KEY_ROUTE_SESSION = "__SDHS_KEY_ROUTE_SESSION";
-  String _version = "0.2.1";
+  String _version = "0.2.2";
   int port;
   String ip = "0.0.0.0";
   List<RouteObject> _routes;
