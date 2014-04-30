@@ -12,6 +12,7 @@ part 'src/RouteFileObject.dart';
 typedef String NotFoundHandler(HttpResponse);
 
 class Sdhs {
+  static String KEY_ROUTE_SESSION = "__SDHS_KEY_ROUTE_SESSION";
   String _version = "0.2.1";
   int port;
   String ip = "0.0.0.0";
@@ -19,12 +20,20 @@ class Sdhs {
   NotFoundHandler handleNotFound = (v) => "404 not found.";
   bool _debugMode = false;
   int _debugModeLevel = 0;
+  var _preCallFunction = null;
   
   Sdhs([this.port = 80, this.ip = "0.0.0.0"]) {
     this._routes = new List<RouteObject>();
     print("[Sdhs] Sdhs Object created.");
   }
 
+  static void addSessionRoute(RouteObject r, HttpSession session) {
+    if (session[Sdhs.KEY_ROUTE_SESSION] == null) {
+      session[Sdhs.KEY_ROUTE_SESSION] = new List<RouteObject>();
+    }
+    session[Sdhs.KEY_ROUTE_SESSION].add(r);
+  }
+  
   void _printDebug(data, {int level : 0}) {
     if (this._debugMode && this._debugModeLevel <= level) {
       print(data);
@@ -79,14 +88,21 @@ class Sdhs {
     _printDebug("request: ${request}", level: 2);
     HttpResponse res = this._setHttpResponse(request.response);
     void _onComplete() {
-        RouteObject obj = _getMatchedObject(request, this._routes);
+        HttpSession session = request.session;
+        RouteObject obj = null;
+        if (session[Sdhs.KEY_ROUTE_SESSION] != null) {
+          obj = _getMatchedObject(request, session[Sdhs.KEY_ROUTE_SESSION]);
+        }
+        if (obj == null) {
+          obj = _getMatchedObject(request, this._routes);
+        }
         _printDebug(obj);
         if (obj == null)
           this._onHttpHandleNotFound(res);
         else {
           Iterable<Match> l = obj.url.allMatches((request.uri.toString()));
           //print("Match : ${m.groups}");
-          obj(l, request, res)
+          obj(l, request, res, this)
             ..then((value) {
                   this._writeValue(value, res);
               })
@@ -109,6 +125,9 @@ class Sdhs {
     this._writeValue(this.handleNotFound(response), response);
   }
   
+  /**
+   * Define the function used when the route is not found
+   */
   void  setNotFoundhandler(NotFoundHandler f) {
     this.handleNotFound = f;
   }
@@ -174,7 +193,11 @@ class Sdhs {
                                           null, m);
           }
           _printDebug("Add route [${r}]", level: 1);
-          this._routes.add(r);
+          if (session != null) {
+            Sdhs.addSessionRoute(r, session);
+          } else {
+            this._routes.add(r);
+          }
         }
       });
       if (have_found_route == false) {
@@ -190,7 +213,11 @@ class Sdhs {
                                                   null, m);
         }
         _printDebug("Add route [${r}]", level: 1);
-        this._routes.add(r);
+        if (session != null) {
+          Sdhs.addSessionRoute(r, session);
+        } else {
+          this._routes.add(r);
+        }
       }
     }
   }
@@ -218,7 +245,11 @@ class Sdhs {
                                       mdata.reflectee.others_param,
                                       im, method);
           _printDebug("Add route [${r}]", level: 1);
-          this._routes.add(r);
+          if (session != null) {
+            Sdhs.addSessionRoute(r, session);
+          } else {
+            this._routes.add(r);
+          }
         }
       }
     });
@@ -232,7 +263,12 @@ class Sdhs {
   void addRouteFile(String route, String file_name, {String base_path: "", String method: "GET", String other_param: "", FileCallback function: null, Encoding encoding: null, HttpSession session : null}) {
     _printDebug("Add route [${route}]", level: 1);
     String r = (base_path + route).replaceAll("\\", "/");
-    this._routes.add(new RouteObject.function(new RegExp(r), method, "HttpRequest,HttpResponse", new RouteFileObject(base_path + file_name, function, encoding)));
+    RouteObject ro = new RouteObject.function(new RegExp(r), method, "HttpRequest,HttpResponse", new RouteFileObject(base_path + file_name, function, encoding));
+    if (session != null) {
+      Sdhs.addSessionRoute(ro, session);
+    } else {
+      this._routes.add(ro);
+    }
   }
 
   /**
@@ -253,12 +289,20 @@ class Sdhs {
   /**
    * Remove the route which match with the given parameter
    */
-  void removeRoute(String route) {
+  void removeRoute(String route, {HttpSession session: null}) {
+    if (session != null && session[Sdhs.KEY_ROUTE_SESSION] != null) {
+      session[Sdhs.KEY_ROUTE_SESSION].removeWhere((RouteObject r) {
+        return r.url.hasMatch(route);
+      });
+    }
     this._routes.removeWhere((RouteObject r) {
       return r.url.hasMatch(route);
     });
   }
   
+  /**
+   * Define if Debug message are displayed and the level of debug displayed. 0 is the lower.
+   */
   void setDebug(bool s, {int level: 0}) {
     this._debugMode = s;
     this._debugModeLevel = level;
@@ -266,12 +310,27 @@ class Sdhs {
 
   /**
    * Start the HttpServer
+   * ## Note : 
+   * If no server are passed, a HttpServer will be create.
+   * # Important :
+   * To work, the server must be a BroadcastServer. if it isn't, it will cause issue.
+   * 
+   * This work will allow to chain route definition and handling.
    */
-  void run({server}) {
+  Future<HttpServer> run({HttpServer server : null}) {
     _printDebug("Run HttpServer");
-    HttpServer.bind(this.ip, this.port).then((HttpServer server) {
-      _printDebug("Bind HttpServer.listen.");
-      server.listen(this._onHttpDataRequest);
-    });
+    Completer c = new Completer();
+    if (server == null) {
+      HttpServer.bind(this.ip, this.port).then((HttpServer server) {
+        _printDebug("Bind HttpServer.listen.");
+        var m = server.asBroadcastStream();
+        m.listen(this._onHttpDataRequest);
+        c.complete(m);
+      });
+    } else {
+        server.listen(this._onHttpDataRequest);
+        c.complete(server);
+    }
+    return c.future;
   }
 }

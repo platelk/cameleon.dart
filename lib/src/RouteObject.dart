@@ -31,7 +31,7 @@ class RouteObject {
     return new Future(() => this._objectInstance.invoke(this.callBackFunction.simpleName, arg).reflectee);
   }
 
-  Future call(Iterable<Match> l, HttpRequest r, HttpResponse response) {
+  Future call(Iterable<Match> l, HttpRequest r, HttpResponse response, [Sdhs s = null]) {
     List arg = new List();
     print(reflect(this.callBackFunction).runtimeType);
     for (Match m in l) {
@@ -58,8 +58,10 @@ class RouteObject {
           arg.add(r);
         } else if (k == "HttpResponse") {
           arg.add(response);
-        } else if (k == "HttpÔSession") {
+        } else if (k == "HttpSession") {
           arg.add(r.session);
+        } else if (k == "Sdhs") {
+          arg.add(s);
         } else if (k == "Data") {
           // TODO : getting POST and GET Data
         }
