@@ -24,7 +24,7 @@ class Sdhs {
   
   Sdhs([this.port = 80, this.ip = "0.0.0.0"]) {
     this._routes = new List<RouteObject>();
-    print("[Sdhs] Sdhs Object created.");
+    _printDebug("[Sdhs] Sdhs Object created.");
   }
 
   static void addSessionRoute(RouteObject r, HttpSession session) {
