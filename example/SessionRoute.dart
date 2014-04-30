@@ -1,8 +1,12 @@
 import 'packages/sdhs/sdhs.dart';
 import "dart:io";
-import "dart:async";
 
-@Route(r"/login/(\w+)/(\w+)", others_param: "HttpSession,Sdhs")
+@Route("/func")
+String my_function() {
+  return "my_function call";
+}
+
+@Route(r"/login/(\w+)/:password", others_param: "HttpSession,Sdhs")
 String login(String login, String password, HttpSession session, Sdhs s) {
   if (login == "admin" && password == "admin") {
     session["login"] = true;
@@ -20,7 +24,7 @@ String disconnect(HttpSession session) {
 }
 
 void main() {
-  Sdhs r = new Sdhs(4242);
+  Sdhs r = new Sdhs(4244);
 
   r.addRoute(login);
   r.addRoute(disconnect);
