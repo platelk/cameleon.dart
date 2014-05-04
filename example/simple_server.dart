@@ -15,9 +15,10 @@ String get_data(HttpRequest res, HttpResponse r) {
   return "ok";
 }
 
-@Route(r"(.*)")
+@Route(r"/(.*).html")
 Future<String> other_func([String request = "", var a = null]) {
-  return new Future(() => "welcome");
+  print("-> $request");
+  return new Future(() => "welcome [$request]");
 }
 
 class R {

@@ -52,6 +52,10 @@ class RouteFileObject {
     this._completer.complete("404 not Found");
   }
 
+  static String getFileContent(String file_path, {Encoding encod: null}) {
+    return new RouteFileObject(file_path, null, encod).getFile();
+  }
+
   String getFile() {
     print("RouteFileObject call [${this._file}]");
     if (this._encod != null) {
