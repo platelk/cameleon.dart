@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Sdhs by platelk</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Sdhs</h1>
+        <h2>Simple Dart Http Server</h2>
+        <a href="https://github.com/platelk/sdhs" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a name="simpliest-dart-http-server-023" class="anchor" href="#simpliest-dart-http-server-023"><span class="octicon octicon-link"></span></a>Simpliest Dart Http Server 0.2.3</h1>
+
+<h2>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
+
+<p>sdhs is a simple http server that provide function to easy create Http based service like RESTfull API, web site...
+This library use the more possible standard API to have the less possible dependancy and use the power of dart.</p>
+
+<h2>
+<a name="goal" class="anchor" href="#goal"><span class="octicon octicon-link"></span></a>Goal</h2>
+
+<p>The goal of this library is to provide the easiest way to create a HTTP service with dart.
+This library use <a href="https://api.dartlang.org/apidocs/channels/stable/#dart-mirrors.Mirror">Mirror API</a> and <a href="https://api.dartlang.org/apidocs/channels/stable/#analyzer/analyzer.Annotation">Annotation</a> to provide the less constraint.</p>
+
+<h2>
+<a name="warning" class="anchor" href="#warning"><span class="octicon octicon-link"></span></a>Warning</h2>
+
+<p>This library is actually under developpment, please do not use for production</p>
+
+<h2>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<p>Actualy the library provide :</p>
+
+<ul>
+<li>Routing
+
+<ul>
+<li>Creating route with <code>Regexp</code> dart modul</li>
+<li>Support of '/:param' syntax</li>
+<li>Creating route bind to a file</li>
+<li>Creating route tree bind to a class</li>
+<li>Creating route tree bind to a directory</li>
+<li>Deleting route</li>
+<li>Add route to a specific HttpSession</li>
+</ul>
+</li>
+<li>Callback
+
+<ul>
+<li>Get url parameter with <code>Regexp</code> group</li>
+<li>Get contextual paramater</li>
+</ul>
+</li>
+</ul><div class="highlight highlight-dart"><pre>  <span class="c1">// Regexp Param</span>
+  <span class="err">@</span><span class="n">Route</span><span class="p">(</span><span class="s1">r'apps/(\w+)'</span><span class="p">)</span>
+  <span class="kt">String</span> <span class="n">putWordApps</span><span class="p">(</span><span class="kt">String</span> <span class="n">w</span><span class="p">)</span>
+
+  <span class="c1">// Regexp Param and contextual param</span>
+  <span class="err">@</span><span class="n">Route</span><span class="p">(</span><span class="s1">r'login/(\w+)/(\w+)'</span><span class="p">,</span> <span class="nl">others_param:</span> <span class="s2">"HttpSession"</span><span class="p">)</span>
+  <span class="kt">String</span> <span class="n">login</span><span class="p">(</span><span class="kt">String</span> <span class="n">login</span><span class="p">,</span> <span class="kt">String</span> <span class="n">pass</span><span class="p">,</span> <span class="n">HttpSession</span> <span class="n">session</span><span class="p">)</span> 
+</pre></div>
+
+<ul>
+<li>Http
+
+<ul>
+<li>Handle GET / PUT / DELETE http request</li>
+<li>Http Server</li>
+</ul>
+</li>
+</ul><h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>The goal of the library is to be easy to use. you can define your route in many way, depend of what you want.</p>
+
+<div class="highlight highlight-dart"><pre><span class="k">import</span> <span class="s1">'packages/sdhs/Sdhs.dart'</span><span class="p">;</span>
+
+<span class="err">@</span><span class="n">Route</span><span class="p">(</span><span class="s2">"/test"</span><span class="p">)</span> <span class="kt">String</span> <span class="n">my_function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="s2">"Test, test, this is a test."</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="err">@</span><span class="n">Route</span><span class="p">(</span><span class="s2">"/nope"</span><span class="p">)</span>
+<span class="kt">String</span> <span class="n">other_func</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="s2">"Nope, is not here"</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nc">R</span> <span class="p">{</span>
+    <span class="err">@</span><span class="n">Route</span><span class="p">(</span><span class="s1">r'class'</span><span class="p">)</span>
+    <span class="kt">String</span> <span class="n">login</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="s2">"Hi ! i'm glad to see you"</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">Sdhs</span> <span class="n">r</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Sdhs</span><span class="p">(</span><span class="m">8080</span><span class="p">);</span>
+
+  <span class="n">r</span><span class="p">.</span><span class="n">addRouteFile</span><span class="p">(</span><span class="s2">"/index"</span><span class="p">,</span> <span class="s2">"../assets/index.html"</span><span class="p">,</span> <span class="nl">method:</span> <span class="s2">"GET"</span><span class="p">);</span>
+  <span class="n">r</span><span class="p">.</span><span class="n">addRoute</span><span class="p">(</span><span class="n">my_function</span><span class="p">);</span>
+  <span class="n">r</span><span class="p">.</span><span class="n">addRoute</span><span class="p">(()</span> <span class="o">=&gt;</span> <span class="s2">"Salut"</span><span class="p">,</span> <span class="nl">routePath:</span> <span class="s2">"/other"</span><span class="p">,</span> <span class="n">method</span> <span class="o">:</span> <span class="s2">"GET,POST"</span><span class="p">);</span>
+  <span class="n">r</span><span class="p">.</span><span class="n">addRoute</span><span class="p">(</span><span class="err">#</span><span class="n">other_func</span><span class="p">);</span>
+  <span class="n">r</span><span class="p">.</span><span class="n">addRoute</span><span class="p">(</span><span class="k">new</span> <span class="n">R</span><span class="p">());</span>
+  <span class="n">r</span><span class="p">.</span><span class="n">run</span><span class="p">();</span>
+<span class="p">}</span>
+
+</pre></div>
+
+<h2>
+<a name="future" class="anchor" href="#future"><span class="octicon octicon-link"></span></a>Future</h2>
+
+<p>In the future, more feature will be add</p>
+
+<ul>
+<li>Getting GET / PUT argument</li>
+<li>HTTPS</li>
+<li>HTML template motor binding depend of extension file</li>
+<li>...</li>
+</ul><h3>
+<a name="author" class="anchor" href="#author"><span class="octicon octicon-link"></span></a>Author</h3>
+
+<p>A young software developper, who love dart.</p>
+
+<h3>
+<a name="information" class="anchor" href="#information"><span class="octicon octicon-link"></span></a>Information</h3>
+
+<p>Actualy this library is developped by myself, if you have any idea, amelioration, bug, ... do not hesitate to contact me.
+G+ : <a href="https://plus.google.com/+K%C3%A9vinPlatel">+Kevin PLATEL</a>
+Mail : <a href="platel.kevin@gmail.com">Kevin PLATEL</a></p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/platelk/sdhs/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/platelk/sdhs/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/platelk/sdhs"></a> is maintained by <a href="https://github.com/platelk">platelk</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
