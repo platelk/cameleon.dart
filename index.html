@@ -29,7 +29,7 @@
       <div class="inner clearfix">
         <section id="main-content">
           <h1>
-<a name="simpliest-dart-http-server-023" class="anchor" href="#simpliest-dart-http-server-023"><span class="octicon octicon-link"></span></a>Simpliest Dart Http Server 0.2.3</h1>
+<a name="simpliest-dart-http-server-024" class="anchor" href="#simpliest-dart-http-server-024"><span class="octicon octicon-link"></span></a>Simpliest Dart Http Server 0.2.4</h1>
 
 <h2>
 <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
@@ -57,15 +57,30 @@ This library use <a href="https://api.dartlang.org/apidocs/channels/stable/#dart
 <li>Routing
 
 <ul>
-<li>Creating route with <code>Regexp</code> dart modul</li>
+<li>Creating route with <code>Regexp</code> dart module</li>
 <li>Support of '/:param' syntax</li>
-<li>Creating route bind to a file</li>
-<li>Creating route tree bind to a class</li>
-<li>Creating route tree bind to a directory</li>
-<li>Deleting route</li>
-<li>Add route to a specific HttpSession</li>
 </ul>
 </li>
+</ul><div class="highlight highlight-dart"><pre>    <span class="c1">// Route definition with a [Regexp] and [:syntax]</span>
+    <span class="err">@</span><span class="n">Route</span><span class="p">(</span><span class="s2">r"/login/(\w+)/:password"</span><span class="p">)</span>
+    <span class="kt">String</span> <span class="n">login</span><span class="p">(</span><span class="kt">String</span> <span class="n">login</span><span class="p">,</span> <span class="kt">String</span> <span class="n">password</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">login</span> <span class="o">==</span> <span class="s2">"admin"</span> <span class="o">&amp;&amp;</span> <span class="n">password</span> <span class="o">==</span> <span class="s2">"admin"</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s2">"Ok"</span><span class="p">;</span>
+      <span class="p">}</span>
+      <span class="k">return</span> <span class="s2">"fail"</span><span class="p">;</span>
+    <span class="p">}</span>
+</pre></div>
+
+<pre><code>* Creating route bind to a file
+* Creating route tree bind to a class
+* Creating route tree bind to a directory
+* Deleting route
+* Add route to a specific HttpSession
+* Redirect
+* Create interceptor
+</code></pre>
+
+<ul>
 <li>Callback
 
 <ul>
@@ -94,6 +109,9 @@ This library use <a href="https://api.dartlang.org/apidocs/channels/stable/#dart
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
 
 <p>The goal of the library is to be easy to use. you can define your route in many way, depend of what you want.</p>
+
+<h3>
+<a name="simple-example" class="anchor" href="#simple-example"><span class="octicon octicon-link"></span></a>Simple example</h3>
 
 <div class="highlight highlight-dart"><pre><span class="k">import</span> <span class="s1">'packages/sdhs/Sdhs.dart'</span><span class="p">;</span>
 
@@ -124,6 +142,44 @@ This library use <a href="https://api.dartlang.org/apidocs/channels/stable/#dart
   <span class="n">r</span><span class="p">.</span><span class="n">run</span><span class="p">();</span>
 <span class="p">}</span>
 
+</pre></div>
+
+<h3>
+<a name="with-more-features" class="anchor" href="#with-more-features"><span class="octicon octicon-link"></span></a>With more features</h3>
+
+<div class="highlight highlight-dart"><pre>  <span class="k">import</span> <span class="s1">'packages/sdhs/sdhs.dart'</span><span class="p">;</span>
+  <span class="k">import</span> <span class="s1">'dart:io'</span><span class="p">;</span>
+
+  <span class="err">@</span><span class="n">Route</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+  <span class="kd">class</span> <span class="nc">WebApp</span> <span class="p">{</span>
+    <span class="err">@</span><span class="n">Route</span><span class="p">(</span><span class="s2">"login/:login/:mdp"</span><span class="p">,</span> <span class="nl">others_param:</span> <span class="s2">"HttpSession"</span><span class="p">)</span>
+    <span class="kt">Object</span> <span class="n">adminLogin</span><span class="p">(</span><span class="kt">String</span> <span class="n">login</span><span class="p">,</span> <span class="kt">String</span> <span class="n">mdp</span><span class="p">,</span> <span class="n">HttpSession</span> <span class="n">session</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">login</span> <span class="o">==</span> <span class="s2">"admin"</span> <span class="o">&amp;&amp;</span> <span class="n">mdp</span> <span class="o">==</span> <span class="s2">"admin"</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">session</span><span class="p">[</span><span class="s2">"isLogin"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">Redirect</span><span class="p">(</span><span class="s2">"/admin/index"</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="k">return</span> <span class="s1">'Bad password'</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="err">@</span><span class="n">Route</span><span class="p">.</span><span class="n">Interceptor</span><span class="p">(</span><span class="s1">r'admin/.*'</span><span class="p">)</span>
+    <span class="n">adminZone</span><span class="p">()</span> <span class="p">{</span>
+      <span class="n">print</span><span class="p">(</span><span class="s2">"Admin zone"</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="err">@</span><span class="n">Route</span><span class="p">(</span><span class="s2">r"admin/index"</span><span class="p">)</span>
+    <span class="kt">String</span> <span class="n">adminMainPage</span><span class="p">()</span> <span class="p">{</span>
+      <span class="n">print</span><span class="p">(</span><span class="s2">"AdminMainPage"</span><span class="p">);</span>
+      <span class="k">return</span> <span class="s2">"Main page"</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+
+  <span class="kt">void</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">Sdhs</span> <span class="n">r</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Sdhs</span><span class="p">(</span><span class="m">4242</span><span class="p">);</span>
+
+    <span class="n">r</span><span class="p">.</span><span class="n">addRoute</span><span class="p">(</span><span class="k">new</span> <span class="n">WebApp</span><span class="p">());</span>
+    <span class="n">r</span><span class="p">.</span><span class="n">run</span><span class="p">();</span>
+  <span class="p">}</span>
 </pre></div>
 
 <h2>
