@@ -8,6 +8,7 @@ import 'dart:convert';
 part 'src/Route.dart';
 part 'src/RouteObject.dart';
 part 'src/RouteFileObject.dart';
+part 'src/RouteTools.dart';
 
 typedef String NotFoundHandler(HttpResponse);
 
@@ -18,6 +19,7 @@ class Sdhs {
   int port;
   String ip = "0.0.0.0";
   List<RouteObject> _routes;
+  HttpServer _serv;
   NotFoundHandler handleNotFound = (v) => "404 not found.";
   bool _debugMode = false;
   int _debugModeLevel = 0;
@@ -43,15 +45,20 @@ class Sdhs {
     }
   }
   
+  /**
+   * Transform a Route format '/one/:var/two' to '/one/(\w+)/two'
+   * Return a String containing the Regexp's pattern 
+   */
   static String transformToRegexp(String s) {
     return s.replaceAll(new RegExp(r":+(\w:)?\w+"), '(\\w+)');
   }
   
-  RouteObject _getMatchedObject(HttpRequest request, List<RouteObject> _routes) {
+  List<RouteObject> _getMatchedObject(HttpRequest request, List<RouteObject> _routes) {
     _printDebug("[Sdhs] HttpResquest: ${request.method} - [${request.uri.toString()}] (${request.requestedUri.host} on port ${request.requestedUri.port})");
     String m = request.method;
     String url = request.uri.toString();
     HttpResponse res = request.response;
+    List<RouteObject> _lRouteObject = new List<RouteObject>();
 
     bool have_found = false;
     int idx = -1;
@@ -61,17 +68,16 @@ class Sdhs {
       Iterable<Match> matches = _routes[i].url.allMatches(url);
       for (Match reg_match in matches) {
         String match = reg_match.group(0);
-        if (_routes[i].method.split(Sdhs.KEY_ROUTE_SESSION).contains(m) && match.length > 0 && match.length > max_length) {
+        if (_routes[i].isInterceptor) {
+          _lRouteObject.insert(0, _routes[i]);
+        } else if (_routes[i].method.split(Sdhs.KEY_ROUTE_SESSION).contains(m) && match.length > 0 && match.length > max_length) {
           idx = i;
           max_length = match.length;
+          _lRouteObject.add(_routes[i]);
         }
       }
     }
-    if (idx > -1) {
-      return _routes[idx];
-    } else {
-      return null;
-    }
+    return _lRouteObject;
   }
   
   HttpResponse _setHttpResponse(HttpResponse res) {
@@ -81,6 +87,7 @@ class Sdhs {
   }
 
   void _writeValue(var value, HttpResponse res) {
+    print("Write: $value");
     if (value is Future) {
        value.then((e) => res.write(e));
     } else {
@@ -89,32 +96,48 @@ class Sdhs {
     res.close();
   }
   
+  void _routeTreatment(HttpRequest request, HttpResponse res, List<RouteObject> listObj) {
+    print(listObj.length);
+    if (listObj.length == 0) {
+      this._onHttpHandleNotFound(res);
+      return ;
+    }
+    RouteObject obj = listObj.removeAt(0);
+    Iterable<Match> l = obj.url.allMatches((request.uri.toString()));
+    //print("Match : ${m.groups}");
+    obj(l, request, res, this)
+      ..then((value) {
+      print(value);
+        if (value is RouteTools) {
+          if (value is Next) {
+            _routeTreatment(request, res, listObj);
+          } else if (value is Redirect) {
+            value.redirect(res, this._serv);
+            this._writeValue("Redirect", res);
+          }
+        } else {
+          this._writeValue(value, res); 
+        }
+      })
+      //..whenComplete()
+      ..catchError((Error) => this._onHttpHandleNotFound(res));
+  }
+  
   void _onHttpDataRequest(HttpRequest request) {
     _printDebug("HttpRequest receive", level: 1);
     _printDebug("request: ${request}", level: 2);
     HttpResponse res = this._setHttpResponse(request.response);
     void _onComplete() {
         HttpSession session = request.session;
-        RouteObject obj = null;
+        List<RouteObject> listObj = null;
         if (session[Sdhs.KEY_ROUTE_SESSION] != null) {
-          obj = _getMatchedObject(request, session[Sdhs.KEY_ROUTE_SESSION]);
+          listObj = _getMatchedObject(request, session[Sdhs.KEY_ROUTE_SESSION]);
         }
-        if (obj == null) {
-          obj = _getMatchedObject(request, this._routes);
+        if (listObj == null || listObj.length == 0) {
+          listObj = _getMatchedObject(request, this._routes);
         }
-        _printDebug(obj);
-        if (obj == null)
-          this._onHttpHandleNotFound(res);
-        else {
-          Iterable<Match> l = obj.url.allMatches((request.uri.toString()));
-          //print("Match : ${m.groups}");
-          obj(l, request, res, this)
-            ..then((value) {
-                  this._writeValue(value, res);
-              })
-            ..whenComplete(() => res.close())
-            ..catchError((Error) => this._onHttpHandleNotFound(res));
-        }
+        _printDebug(listObj);
+        _routeTreatment(request, res, listObj);
         return ;
     }
     new Future(() =>_onComplete());
@@ -155,7 +178,7 @@ class Sdhs {
    * ##Note
    * If [routePath] is not provide, the annotion [Route] will be used to create the routing. if it is provide, it will erase the route provide by the annotation
    */
-  void addRoute(var route, {HttpSession session : null, String routePath : null, String base_url: "", String method : null, String other_param: ""}) {
+  void addRoute(var route, {HttpSession session : null, String routePath : null, String base_url: "", String method : null, String other_param: "", bool isInterceptor : false}) {
     InstanceMirror im = reflect(route);
 
     if (im.type is FunctionTypeMirror || route is Symbol) {
@@ -165,7 +188,7 @@ class Sdhs {
     }
   }
 
-  void _addFunctionRoute(var route, {HttpSession session : null, String routePath : null, String base_url: "", String method : null, String other_param: ""}) {
+  void _addFunctionRoute(var route, {HttpSession session : null, String routePath : null, String base_url: "", String method : null, String other_param: "", bool isInterceptor : false}) {
     MethodMirror m = null;
     RouteObject r = null;
     if (route is Symbol) {
@@ -197,10 +220,16 @@ class Sdhs {
             r = new RouteObject.function(new RegExp(transformToRegexp(base_url + path)), met,
                                                       metadata.reflectee.others_param,
                                                       route);
+            if (metadata.reflectee.isInterceptor || isInterceptor) {
+              r.isInterceptor = true;
+            }
           } else {
             r = new RouteObject(new RegExp(transformToRegexp(base_url + path)), met,
                                           metadata.reflectee.others_param,
                                           null, m);
+            if (metadata.reflectee.isInterceptor || isInterceptor) {
+              r.isInterceptor = true;
+            }
           }
           this._addRouteIn(r, session);
         }
@@ -210,10 +239,16 @@ class Sdhs {
           r = new RouteObject.function(new RegExp(transformToRegexp(base_url + routePath)), method,
                                                             "",
                                                             route);
+          if (isInterceptor) {
+            r.isInterceptor = true;
+          }
         } else {
           r = new RouteObject(new RegExp(transformToRegexp(base_url + routePath)), method,
                                                   "",
                                                   null, m);
+          if (isInterceptor) {
+            r.isInterceptor = true;
+          }
         }
         this._addRouteIn(r, session);
       }
@@ -242,6 +277,9 @@ class Sdhs {
                                       mdata.reflectee.method.toString(),
                                       mdata.reflectee.others_param,
                                       im, method);
+          if (mdata.reflectee.isInterceptor) {
+            r.isInterceptor = true;
+          }
           this._addRouteIn(r, session);
         }
       }
@@ -315,12 +353,14 @@ class Sdhs {
     Completer c = new Completer();
     if (server == null) {
       HttpServer.bind(this.ip, this.port).then((HttpServer server) {
+        this._serv = server;
         _printDebug("Bind HttpServer.listen.");
         var m = server.asBroadcastStream();
         m.listen(this._onHttpDataRequest);
         c.complete(m);
       });
     } else {
+        this._serv = server;
         server.listen(this._onHttpDataRequest);
         c.complete(server);
     }

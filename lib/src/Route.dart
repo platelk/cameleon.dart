@@ -13,8 +13,11 @@ class Route {
   final String url;
   final String method;
   final String others_param;
+  static final Next next = new Next();
+  final bool isInterceptor;
 
-  const Route(this.url, {this.method: "GET", this.others_param: ""});
-
+  const Route(this.url, {this.method: "GET", this.others_param: ""}) : isInterceptor = false;
+  const Route.Interceptor(this.url, {this.method: "GET", this.others_param: ""}) : isInterceptor = true;
+  
   String toString() => "${this.method} : [${this.url}]";
 }

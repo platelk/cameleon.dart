@@ -52,6 +52,9 @@ class RouteFileObject {
     this._completer.complete("404 not Found");
   }
 
+  /**
+   * Return all the file in string format.
+   */
   String getFile() {
     print("RouteFileObject call [${this._file}]");
     if (this._encod != null) {

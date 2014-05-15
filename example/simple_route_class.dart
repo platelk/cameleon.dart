@@ -7,7 +7,7 @@ class Root {
 
     Root([this.rest = null]);
 
-    @Route(r'login/(\w+)/(\w+)', others_param: "Session")
+    @Route(r'login/(\w+)/(\w+)', others_param: "HttpSession")
     String login(String login, String pass, HttpSession session) {
       if (session.isNew) {
         session["login"] = login;
@@ -30,7 +30,6 @@ class Root {
 
     @Route(r'apps/', method: "PUT")
     String putApps() {
-      sleep(new Duration(seconds:10));
       print("putApps called");
       return "App putted";
     }

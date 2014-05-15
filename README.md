@@ -1,4 +1,4 @@
-# Simpliest Dart Http Server 0.2.3
+# Simpliest Dart Http Server 0.2.4
 ## Introduction
 sdhs is a simple http server that provide function to easy create Http based service like RESTfull API, web site...
 This library use the more possible standard API to have the less possible dependancy and use the power of dart.
@@ -14,13 +14,25 @@ This library is actually under developpment, please do not use for production
 
 Actualy the library provide :
   * Routing
-    * Creating route with `Regexp` dart modul
+    * Creating route with `Regexp` dart module
     * Support of '/:param' syntax
+```dart
+    // Route definition with a [Regexp] and [:syntax]
+    @Route(r"/login/(\w+)/:password")
+    String login(String login, String password) {
+      if (login == "admin" && password == "admin") {
+        return "Ok";
+      }
+      return "fail";
+    }
+```
     * Creating route bind to a file
     * Creating route tree bind to a class
     * Creating route tree bind to a directory
     * Deleting route
     * Add route to a specific HttpSession
+    * Redirect
+    * Create interceptor
   * Callback
     * Get url parameter with `Regexp` group
     * Get contextual paramater
@@ -39,6 +51,7 @@ Actualy the library provide :
     
 ## Usage
 The goal of the library is to be easy to use. you can define your route in many way, depend of what you want.
+### Simple example
 ```dart
 import 'packages/sdhs/Sdhs.dart';
 
@@ -70,7 +83,42 @@ void main() {
 }
 
 ```
+### With more features
+```dart
+  import 'packages/sdhs/sdhs.dart';
+  import 'dart:io';
   
+  @Route("/")
+  class WebApp {
+    @Route("login/:login/:mdp", others_param: "HttpSession")
+    Object adminLogin(String login, String mdp, HttpSession session) {
+      if (login == "admin" && mdp == "admin") {
+        session["isLogin"] = true;
+        return new Redirect("/admin/index");
+      }
+      return 'Bad password';
+    }
+    
+    @Route.Interceptor(r'admin/.*')
+    adminZone() {
+      print("Admin zone");
+    }
+    
+    @Route(r"admin/index")
+    String adminMainPage() {
+      print("AdminMainPage");
+      return "Main page";
+    }
+  }
+  
+  
+  void main() {
+    Sdhs r = new Sdhs(4242);
+    
+    r.addRoute(new WebApp());
+    r.run();
+  }
+```
 ## Future
 In the future, more feature will be add
   * Getting GET / PUT argument
