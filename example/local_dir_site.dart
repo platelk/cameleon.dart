@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'packages/sdhs/Sdhs.dart';
+import 'packages/sdhs/sdhs.dart';
 
 /*
  * This example show how to launch a simple site from a directory
