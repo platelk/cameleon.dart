@@ -96,7 +96,6 @@ class Sdhs {
   }
 
   void _routeTreatment(HttpRequest request, HttpResponse res, List<RouteObject> listObj) {
-    print(listObj.length);
     if (listObj.length == 0) {
       this._onHttpHandleNotFound(res);
       return ;
