@@ -1,5 +1,8 @@
 part of sdhs;
 
+/**
+ * [RouteObject] is a real representation of a route.
+ */
 class RouteObject {
   RegExp url;
   String method;
@@ -9,6 +12,7 @@ class RouteObject {
   var _function = null;
   var _argument = null;
   var _completer;
+  bool isInterceptor = false;
 
   RouteObject(this.url, this.method, String others_params, this._objectInstance, this.callBackFunction) {
     this.others_param = others_params.split(",");
@@ -21,19 +25,23 @@ class RouteObject {
   String toString() => "Route: ${this.method} - [${this.url}] -> ${this.callBackFunction}";
 
   Future _callFunction(List arg) {
+    Future f = null;
     if (this._function != null) {
-          return new Future(() => Function.apply(this._function, arg));
+          f = new Future(() => Function.apply(this._function, arg));
     }
-    if (this._objectInstance == null) {
-      print(arg);
-          return new Future (() => (this.callBackFunction.owner).invoke(this.callBackFunction.simpleName, arg).reflectee);
+    else if (this._objectInstance == null) {
+          f = new Future (() => (this.callBackFunction.owner).invoke(this.callBackFunction.simpleName, arg).reflectee);
+    } else {
+          f = new Future(() => this._objectInstance.invoke(this.callBackFunction.simpleName, arg).reflectee);
     }
-    return new Future(() => this._objectInstance.invoke(this.callBackFunction.simpleName, arg).reflectee);
+    if (isInterceptor) {
+      f = new Future(() => Route.next);
+    }
+    return f;
   }
 
   Future call(Iterable<Match> l, HttpRequest r, HttpResponse response, [Sdhs s = null]) {
     List arg = new List();
-    print(reflect(this.callBackFunction).runtimeType);
     for (Match m in l) {
       List<int> idx_list = new List<int>.generate(m.groupCount, (int i) {
         return i+1;

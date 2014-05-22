@@ -47,7 +47,6 @@ class RouteFileObject {
   }
 
   void _onFileError(var e) {
-    print("RouteFileObject error ! [${e}]");
     this._response.statusCode = HttpStatus.NOT_FOUND;
     this._completer.complete("404 not Found");
   }
@@ -56,8 +55,10 @@ class RouteFileObject {
     return new RouteFileObject(file_path, null, encod).getFile();
   }
 
+  /**
+   * Return all the file in string format.
+   */
   String getFile() {
-    print("RouteFileObject call [${this._file}]");
     if (this._encod != null) {
       return this.onReadFile(this._file.readAsStringSync(encoding: this._encod));
     } else {
@@ -66,13 +67,11 @@ class RouteFileObject {
   }
 
   Future<String> call(HttpRequest r, HttpResponse response) {
-    print("RouteFileObject call [${this._file}]");
     this._completer = new Completer();
     this._response = response;
     if (this._encod != null) {
       this._file.readAsString(encoding: this._encod).then(this.onReadFile).catchError(this._onFileError);
     } else {
-      print("Read as byte");
       this._file.readAsBytes().then(this.onReadBytesFile).catchError(this._onFileError);
     }
     return this._completer.future;
