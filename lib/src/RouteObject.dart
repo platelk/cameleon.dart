@@ -57,24 +57,25 @@ class RouteObject {
           arg.add(g);
         }
       }
-
-      // Adding lib param
-      for (String k in this.others_param) {
-        if (k == "RouteObject") {
-          arg.add(this);
-        } else if (k == "HttpRequest") {
-          arg.add(r);
-        } else if (k == "HttpResponse") {
-          arg.add(response);
-        } else if (k == "HttpSession") {
-          arg.add(r.session);
-        } else if (k == "Sdhs") {
-          arg.add(s);
-        } else if (k == "Data") {
-          // TODO : getting POST and GET Data
-        }
-      }
     }
+   // Adding lib param
+   for (String k in this.others_param) {
+     if (k == "RouteObject") {
+       arg.add(this);
+     } else if (k == "HttpRequest") {
+       arg.add(r);
+     } else if (k == "HttpResponse") {
+       arg.add(response);
+     } else if (k == "HttpSession") {
+       arg.add(r.session);
+     } else if (k == "Sdhs") {
+       arg.add(s);
+     } else if (k == "Data") {
+       // TODO : getting POST and GET Data
+     } else {
+       print("Error : $k didn't match");
+     }
+   }
     return this._callFunction(arg);
   }
 }

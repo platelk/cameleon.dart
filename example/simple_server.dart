@@ -7,7 +7,7 @@ import "dart:async";
 @Route(r"/(.*).html")
 Future<String> other_func([String request = "", var a = null]) {
   print("-> $request");
-  return new Future(() => "welcome [$request]");
+  return new Future(() => "{'key': 'value'}");
 }
 
 

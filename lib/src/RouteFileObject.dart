@@ -6,6 +6,12 @@ typedef String FileCallBack(String fileContent);
  * [RouteFileObject] is a create by a call to [Sdhs.addFileRoute]
  */
 class RouteFileObject {
+  static Map<String, String> _mimeTypeMap = {
+                                             "html": "text/html",
+                                             "js": "application/javascript",
+                                             "css": "text/css",
+                                             "dart": "application/dart"
+                                             };
   String file_path;
   File _file;
   Encoding _encod;
@@ -66,9 +72,20 @@ class RouteFileObject {
     }
   }
 
+  String getMimeType() {
+    List<String> l = this.file_path.split(".");
+
+    if (_mimeTypeMap.containsKey(l.last)) {
+      return _mimeTypeMap[l.last];
+    } else {
+      return "text/plain";
+    }
+  }
+
   Future<String> call(HttpRequest r, HttpResponse response) {
     this._completer = new Completer();
     this._response = response;
+    response.headers.set(HttpHeaders.CONTENT_TYPE, this.getMimeType());
     if (this._encod != null) {
       this._file.readAsString(encoding: this._encod).then(this.onReadFile).catchError(this._onFileError);
     } else {

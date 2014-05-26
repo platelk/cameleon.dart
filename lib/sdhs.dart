@@ -88,9 +88,26 @@ class Sdhs {
 
   void _writeValue(var value, HttpResponse res) {
     if (value is Future) {
-       value.then((e) => res.write(e));
+       value.then((e) {
+         try {
+         ContentType c = ContentType.parse(e);
+         res.headers.set(HttpHeaders.CONTENT_TYPE, c.mimeType);
+         res.headers.set(HttpHeaders.CONTENT_ENCODING, c.charset);
+         } catch(e) {
+         } finally {
+           res.write(e);
+         }
+       });
     } else {
-       res.write(value);
+      try {
+        ContentType c = ContentType.parse(value);
+        res.headers.set(HttpHeaders.CONTENT_TYPE, c.mimeType);
+        res.headers.set(HttpHeaders.CONTENT_ENCODING, c.charset);
+      } catch(e) {
+
+      } finally {
+        res.write(value);
+      }
     }
     res.close();
   }
