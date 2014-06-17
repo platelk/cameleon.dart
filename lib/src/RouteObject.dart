@@ -40,7 +40,7 @@ class RouteObject {
     return f;
   }
 
-  Future call(Iterable<Match> l, HttpRequest r, HttpResponse response, [Sdhs s = null]) {
+  Future call(Iterable<Match> l, HttpRequest r, HttpResponse response, [Cameleon s = null]) {
     List arg = new List();
     for (Match m in l) {
       List<int> idx_list = new List<int>.generate(m.groupCount, (int i) {

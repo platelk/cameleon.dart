@@ -1,4 +1,4 @@
-import 'packages/sdhs/sdhs.dart';
+import 'packages/cameleon/cameleon.dart';
 import "dart:io";
 
 @Route("/")
@@ -67,7 +67,7 @@ class Root {
 }
 
 void main() {
-  Sdhs r = new Sdhs(8080);
+  Cameleon r = new Cameleon(8080);
 
   r.addRoute(new Root(r));
   r.run();

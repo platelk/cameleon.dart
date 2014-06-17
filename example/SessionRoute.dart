@@ -1,4 +1,4 @@
-import 'packages/sdhs/sdhs.dart';
+import 'packages/cameleon/cameleon.dart';
 import "dart:io";
 
 @Route("/func")
@@ -24,7 +24,7 @@ String disconnect(HttpSession session) {
 }
 
 void main() {
-  Sdhs r = new Sdhs(4244);
+  Cameleon r = new Cameleon(4244);
 
   r
   ..addRoute(login)

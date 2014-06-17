@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'packages/sdhs/sdhs.dart';
+import 'packages/cameleon/cameleon.dart';
 
 /*
  * This example show how to launch a simple site from a directory
@@ -8,7 +8,7 @@ import 'packages/sdhs/sdhs.dart';
 void main(List<String> arg) {
 
   // Creation of a Sdhs server just by passing the desired port
-  Sdhs r = new Sdhs(int.parse(arg[1]));
+  Cameleon r = new Cameleon(int.parse(arg[1]));
 
   /* Add the root directory
     ""        : Concat this string with all path

@@ -2,7 +2,7 @@ part of cameleon;
 
 /**
  * [Route] is a annotation type used to create the routing.
- * 
+ *
  * - url : is the route that will be used
  * - method : It is the method that the route will listen. (GET / PUT ...)
  * - others_param : It decribes the additional parameter passed to the callBack function.
@@ -18,9 +18,8 @@ class Route {
   final bool isInterceptor;
   final bool isFile;
 
-  const Route(this.url, {this.method: "GET", this.others_param: ""}) : isInterceptor = false, isFile= false;
+  const Route(this.url, {this.method: "GET", this.others_param: ""}) : isInterceptor = false, isRedirect= false, isFile= false;
   const Route.Interceptor(this.url, {this.method: "GET", this.others_param: ""}) : isInterceptor = true, isRedirect= false, isFile= false;
-  const Route.Redirect(this.url) : isInterceptor = false, redirect = true, isFile= false;
   static String file(url) {
     return new RouteFileObject(url).getFile();
   }
