@@ -1,4 +1,4 @@
-part of sdhs;
+part of cameleon;
 
 /**
  * [RouteObject] is a real representation of a route.
@@ -34,9 +34,9 @@ class RouteObject {
     } else {
           f = new Future(() => this._objectInstance.invoke(this.callBackFunction.simpleName, arg).reflectee);
     }
-    if (isInterceptor) {
+    /* if (isInterceptor) {
       f = new Future(() => Route.next);
-    }
+    }*/
     return f;
   }
 

@@ -1,4 +1,4 @@
-library sdhs;
+library cameleon;
 
 import "dart:io";
 import "dart:async";
@@ -12,8 +12,8 @@ part 'src/RouteTools.dart';
 
 typedef String NotFoundHandler(HttpResponse);
 
-class Sdhs {
-  static String KEY_ROUTE_SESSION = "__SDHS_KEY_ROUTE_SESSION";
+class Cameleon {
+  static String KEY_ROUTE_SESSION = "__Cameleon_KEY_ROUTE_SESSION";
   static String WORD_SEP = ",";
   String _version = "0.2.3";
   int port;
@@ -25,18 +25,18 @@ class Sdhs {
   int _debugModeLevel = 0;
   var _preCallFunction = null;
 
-  Sdhs([this.port = 80, this.ip = "0.0.0.0"]) {
+  Cameleon([this.port = 80, this.ip = "0.0.0.0"]) {
     this._routes = new List<RouteObject>();
-    _printDebug("[Sdhs] Sdhs Object created.");
+    _printDebug("[Cameleon] Cameleon Object created.");
   }
 
   static void addSessionRoute(RouteObject r, HttpSession session) {
     if (session == null || r == null)
       return ;
-    if (session[Sdhs.KEY_ROUTE_SESSION] == null) {
-      session[Sdhs.KEY_ROUTE_SESSION] = new List<RouteObject>();
+    if (session[Cameleon.KEY_ROUTE_SESSION] == null) {
+      session[Cameleon.KEY_ROUTE_SESSION] = new List<RouteObject>();
     }
-    session[Sdhs.KEY_ROUTE_SESSION].add(r);
+    session[Cameleon.KEY_ROUTE_SESSION].add(r);
   }
 
   void _printDebug(data, {int level : 0}) {
@@ -54,11 +54,12 @@ class Sdhs {
   }
 
   List<RouteObject> _getMatchedObject(HttpRequest request, List<RouteObject> _routes) {
-    _printDebug("[Sdhs] HttpResquest: ${request.method} - [${request.uri.toString()}] (${request.requestedUri.host} on port ${request.requestedUri.port})");
+    _printDebug("[Cameleon] HttpResquest: ${request.method} - [${request.uri.toString()}] (${request.requestedUri.host} on port ${request.requestedUri.port})");
     String m = request.method;
     String url = request.uri.toString();
     HttpResponse res = request.response;
     List<RouteObject> _lRouteObject = new List<RouteObject>();
+    List<RouteObject> _lInterceptor = new List<RouteObject>();
 
     bool have_found = false;
     int idx = -1;
@@ -69,19 +70,20 @@ class Sdhs {
       for (Match reg_match in matches) {
         String match = reg_match.group(0);
         if (_routes[i].isInterceptor) {
-          _lRouteObject.insert(0, _routes[i]);
-        } else if (_routes[i].method.split(Sdhs.KEY_ROUTE_SESSION).contains(m) && match.length > 0 && match.length > max_length) {
+          _lInterceptor.insert(0, _routes[i]);
+        } else if (_routes[i].method.split(Cameleon.KEY_ROUTE_SESSION).contains(m) && match.length > 0 && match.length > max_length) {
           idx = i;
           max_length = match.length;
-          _lRouteObject.add(_routes[i]);
+          _lRouteObject.insert(0, _routes[i]);
         }
       }
     }
+    _lRouteObject.insertAll(0, _lInterceptor);
     return _lRouteObject;
   }
 
   HttpResponse _setHttpResponse(HttpResponse res) {
-    res.headers.set(HttpHeaders.SERVER, "Sdhs/" + this._version);
+    res.headers.set(HttpHeaders.SERVER, "Cameleon/" + this._version);
     res.headers.date = new DateTime.now();
     return res;
   }
@@ -122,8 +124,8 @@ class Sdhs {
     //print("Match : ${m.groups}");
     obj(l, request, res, this)
       ..then((value) {
-        if (value is RouteTools) {
-          if (value is Next) {
+        if (value is RouteTools || value == null) {
+          if (value is Next || obj.isInterceptor) {
             _routeTreatment(request, res, listObj);
           } else if (value is Redirect) {
             value.redirect(res, this._serv);
@@ -144,8 +146,8 @@ class Sdhs {
     void _onComplete() {
         HttpSession session = request.session;
         List<RouteObject> listObj = null;
-        if (session[Sdhs.KEY_ROUTE_SESSION] != null) {
-          listObj = _getMatchedObject(request, session[Sdhs.KEY_ROUTE_SESSION]);
+        if (session[Cameleon.KEY_ROUTE_SESSION] != null) {
+          listObj = _getMatchedObject(request, session[Cameleon.KEY_ROUTE_SESSION]);
         }
         if (listObj == null || listObj.length == 0) {
           listObj = _getMatchedObject(request, this._routes);
@@ -158,11 +160,11 @@ class Sdhs {
   }
 
   void _onHttpError() {
-    _printDebug("[Sdhs] HttpError!");
+    _printDebug("[Cameleon] HttpError!");
   }
 
   void _onHttpHandleNotFound(HttpResponse response) {
-    _printDebug("[Sdhs] HttpNotFound !");
+    _printDebug("[Cameleon] HttpNotFound !");
     response.statusCode = HttpStatus.NOT_FOUND;
     this._writeValue(this.handleNotFound(response), response);
   }
@@ -176,7 +178,7 @@ class Sdhs {
 
   void _addRouteIn(RouteObject r, HttpSession session) {
     if (session != null) {
-      Sdhs.addSessionRoute(r, session);
+      Cameleon.addSessionRoute(r, session);
     } else {
       this._routes.add(r);
     }
@@ -336,8 +338,8 @@ class Sdhs {
    * Remove the route which match with the given parameter
    */
   void removeRoute(String route, {HttpSession session: null}) {
-    if (session != null && session[Sdhs.KEY_ROUTE_SESSION] != null) {
-      session[Sdhs.KEY_ROUTE_SESSION].removeWhere((RouteObject r) {
+    if (session != null && session[Cameleon.KEY_ROUTE_SESSION] != null) {
+      session[Cameleon.KEY_ROUTE_SESSION].removeWhere((RouteObject r) {
         return r.url.hasMatch(route);
       });
     }

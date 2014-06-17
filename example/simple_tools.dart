@@ -1,33 +1,43 @@
-import 'packages/sdhs/sdhs.dart';
+import 'packages/cameleon/cameleon.dart';
 import 'dart:io';
 
-@Route("/")
 class WebApp {
+  @Route('/')
+  Object index() {
+    print("Index");
+    return Route.file('assets/index.html');
+  }
+
   @Route("login/:login/:mdp", others_param: "HttpSession")
   Object adminLogin(String login, String mdp, HttpSession session) {
+    print('Admin registration');
     if (login == "admin" && mdp == "admin") {
       session["isLogin"] = true;
-      return new Redirect("/admin/index");
+      return Route.redirect('admin/index');
     }
-    return 'Bad password';
+    return Route.redirect('/');
   }
   
   @Route.Interceptor(r'admin/.*')
-  adminZone() {
+  void adminZone() {
     print("Admin zone");
   }
   
-  @Route(r"admin/index")
-  String adminMainPage() {
-    print("AdminMainPage");
-    return "Main page";
+  @Route(r"admin/index", others_param: "HttpSession")
+  String adminMainPage(HttpSession session) {
+    if (session["isLogin"]) {
+      print("AdminMainPage");
+      return "Admin Zone";
+    }
+    return Route.redirect('/');
   }
 }
 
 
 void main() {
-  Sdhs r = new Sdhs(4242);
+  Cameleon r = new Cameleon(4240);
   
   r.addRoute(new WebApp());
+  r.setDebug(true, level: 3);
   r.run();
 }

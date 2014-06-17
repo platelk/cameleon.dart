@@ -1,4 +1,4 @@
-part of sdhs;
+part of cameleon;
 
 /**
  * [Route] is a annotation type used to create the routing.
@@ -13,11 +13,23 @@ class Route {
   final String url;
   final String method;
   final String others_param;
-  static final Next next = new Next();
+  final bool isRedirect;
+  static final Next _next = new Next();
   final bool isInterceptor;
+  final bool isFile;
 
-  const Route(this.url, {this.method: "GET", this.others_param: ""}) : isInterceptor = false;
-  const Route.Interceptor(this.url, {this.method: "GET", this.others_param: ""}) : isInterceptor = true;
-  
+  const Route(this.url, {this.method: "GET", this.others_param: ""}) : isInterceptor = false, isFile= false;
+  const Route.Interceptor(this.url, {this.method: "GET", this.others_param: ""}) : isInterceptor = true, isRedirect= false, isFile= false;
+  const Route.Redirect(this.url) : isInterceptor = false, redirect = true, isFile= false;
+  static String file(url) {
+    return new RouteFileObject(url).getFile();
+  }
+
+  static Redirect redirect(url) {
+    return new Redirect(url);
+  }
+
+  static Next get next => Route._next;
+
   String toString() => "${this.method} : [${this.url}]";
 }

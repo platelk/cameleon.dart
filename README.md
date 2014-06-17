@@ -1,6 +1,6 @@
-# Simpliest Dart Http Server 0.2.7
+# Cameleon.dart 0.3.0
 ## Introduction
-sdhs is a simple http server that provide function to easy create Http based service like RESTfull API, web site...
+Cameleon.dart is a simple http server that provide function to easy create Http based service like RESTfull API, web site...
 This library use the more possible standard API to have the less possible dependancy and use the power of dart.
 
 ## Goal
@@ -26,6 +26,7 @@ Actualy the library provide :
       return "fail";
     }
 ```
+  * Http tools
     * Creating route bind to a file
     * Creating route tree bind to a class
     * Creating route tree bind to a directory
@@ -36,6 +37,7 @@ Actualy the library provide :
   * Callback
     * Get url parameter with `Regexp` group
     * Get contextual paramater
+
 ```dart
   // Regexp Param
   @Route(r'apps/(\w+)')
@@ -53,72 +55,51 @@ Actualy the library provide :
 The goal of the library is to be easy to use. you can define your route in many way, depend of what you want.
 ### Simple example
 ```dart
-import 'packages/sdhs/Sdhs.dart';
+import 'packages/cameleon/cameleon.dart';
+import 'dart:io';
 
-@Route("/test") String my_function() {
-  return "Test, test, this is a test.";
-}
+class WebApp {
+  @Route('/')
+  Object index() {
+    print("Index");
+    return Route.file('assets/index.html');
+  }
 
-@Route("/nope")
-String other_func() {
-  return "Nope, is not here";
-}
-
-class R {
-    @Route(r'class')
-    String login() {
-      return "Hi ! i'm glad to see you";
+  @Route("login/:login/:mdp", others_param: "HttpSession")
+  Object adminLogin(String login, String mdp, HttpSession session) {
+    print('Admin registration');
+    if (login == "admin" && mdp == "admin") {
+      session["isLogin"] = true;
+      return Route.redirect('admin/index');
     }
+    return Route.redirect('/');
+  }
+
+  @Route.Interceptor(r'admin/.*')
+  void adminZone() {
+    print("Admin zone");
+  }
+
+  @Route(r"admin/index", others_param: "HttpSession")
+  String adminMainPage(HttpSession session) {
+    if (session["isLogin"]) {
+      print("AdminMainPage");
+      return "Admin Zone";
+    }
+    return Route.redirect('/');
+  }
 }
+
 
 void main() {
-  Sdhs r = new Sdhs(8080);
+  Cameleon r = new Cameleon(4240);
 
-  r.addRouteFile("/index", "../assets/index.html", method: "GET");
-  r.addRoute(my_function);
-  r.addRoute(() => "Salut", routePath: "/other", method : "GET,POST");
-  r.addRoute(#other_func);
-  r.addRoute(new R());
+  r.addRoute(new WebApp());
+  r.setDebug(true, level: 3);
   r.run();
 }
+```
 
-```
-### With more features
-```dart
-  import 'packages/sdhs/sdhs.dart';
-  import 'dart:io';
-  
-  @Route("/")
-  class WebApp {
-    @Route("login/:login/:mdp", others_param: "HttpSession")
-    Object adminLogin(String login, String mdp, HttpSession session) {
-      if (login == "admin" && mdp == "admin") {
-        session["isLogin"] = true;
-        return new Redirect("/admin/index");
-      }
-      return 'Bad password';
-    }
-    
-    @Route.Interceptor(r'admin/.*')
-    adminZone() {
-      print("Admin zone");
-    }
-    
-    @Route(r"admin/index")
-    String adminMainPage() {
-      print("AdminMainPage");
-      return "Main page";
-    }
-  }
-  
-  
-  void main() {
-    Sdhs r = new Sdhs(4242);
-    
-    r.addRoute(new WebApp());
-    r.run();
-  }
-```
 ## Future
 In the future, more feature will be add
   * Getting GET / PUT argument

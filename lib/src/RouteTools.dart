@@ -1,4 +1,4 @@
-part of sdhs;
+part of cameleon;
 
 class RouteTools {
   
@@ -26,6 +26,10 @@ class Redirect extends RouteTools {
    res.headers.set(HttpHeaders.LOCATION, this.url);
    res.statusCode = HttpStatus.MOVED_TEMPORARILY;
  }
+
+  static void redirection() {
+
+  }
 }
 
 class Next extends RouteTools {
