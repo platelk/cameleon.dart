@@ -14,12 +14,39 @@ class RouteObject {
   var _completer;
   bool isInterceptor = false;
 
-  RouteObject(this.url, this.method, String others_params, this._objectInstance, this.callBackFunction) {
-    this.others_param = others_params.split(",");
+  RouteObject(this.url, http_method, others_params, this._objectInstance, this.callBackFunction) {
+    this._setMethod(http_method);
+    this._setOthersParams(others_params);
+    _checkAndPutStartSlash();
   }
-  RouteObject.function(this.url, this.method, String others_params, this._function) {
-    this.others_param = others_params.split(",");
+  RouteObject.function(this.url, http_method, others_params, this._function) {
+    this._setMethod(http_method);
+    this._setOthersParams(others_params);
+    _checkAndPutStartSlash();
     this.callBackFunction = this._function;
+
+  }
+
+  void _checkAndPutStartSlash() {
+    if (this.url.pattern[0] != '/') {
+      this.url = new RegExp('/' + this.url.pattern);
+    }
+  }
+
+  void _setOthersParams(Object o) {
+    if (o is String) {
+      this.others_param = o.split(",");
+    } else if (o is List) {
+      this.others_param = o;
+    }
+  }
+
+  void _setMethod(Object o) {
+    if (o is String) {
+      this.method = o;
+    } else if (o is List) {
+      this.method = (o as List).join(",");
+    }
   }
 
   String toString() => "Route: ${this.method} - [${this.url}] -> ${this.callBackFunction}";
@@ -99,7 +126,7 @@ class RouteObject {
        // TODO : getting POST and GET Data
        arg.add(data);
      } else {
-       print("Error : $k didn't match");
+       //print("Error : $k didn't match");
      }
    }
     if (asData == false) {
@@ -111,7 +138,6 @@ class RouteObject {
         if (needPostData)
           builder.add(buffer);
       }).onDone(() {
-        print("done");
         if (needPostData) {
           if (needRawPostData) {
             rawData = builder.takeBytes();
@@ -120,7 +146,7 @@ class RouteObject {
             playloadData.split("&").forEach((String e) {
               List<String> l = e.split("=");
               if (l.length > 1) {
-                post_data[Uri.decodeFull(l[0])] = Uri.decodeFull(l[1]);
+                post_data[Uri.decodeFull(l[0])] = Uri.decodeFull(l[1].replaceAll('+', ' '));
               }
             });
           }
@@ -128,7 +154,8 @@ class RouteObject {
         if (needGetData) {
           get_data = r.uri.queryParameters;
         }
-        print(arg);
+        data.addAll(get_data);
+        data.addAll(post_data);
         this._callFunction(arg).then((d) => c.complete(d));
       });
       return c.future;

@@ -12,8 +12,8 @@ part of cameleon;
  */
 class Route {
   final String url;
-  final String method;
-  final String others_param;
+  final dynamic method;
+  final dynamic others_param;
   final bool isRedirect;
   static final Next _next = new Next();
   final bool isInterceptor;

@@ -40,7 +40,7 @@ class Cameleon {
   }
 
   void _printDebug(data, {int level : 0}) {
-    if (this._debugMode && this._debugModeLevel <= level) {
+    if (this._debugMode && this._debugModeLevel >= level) {
       print(data);
     }
   }
@@ -54,7 +54,7 @@ class Cameleon {
   }
 
   List<RouteObject> _getMatchedObject(HttpRequest request, List<RouteObject> _routes) {
-    print("[Cameleon] HttpResquest: ${request.method} - [${request.uri.toString()}] (${request.requestedUri.host} on port ${request.requestedUri.port})");
+    _printDebug("[Cameleon] HttpResquest: ${request.method} - [${request.uri.toString()}] (${request.requestedUri.host} on port ${request.requestedUri.port})");
     String m = request.method;
     String url = request.uri.toString();
     HttpResponse res = request.response;
@@ -67,19 +67,23 @@ class Cameleon {
     for (int i = 0; i < _routes.length; i++) {
 
       Iterable<Match> matches = _routes[i].url.allMatches(url);
+      int match_length = 0;
       for (Match reg_match in matches) {
-        String match = reg_match.group(0);
+        for (int i = 0; i <= reg_match.groupCount; i++) {
+        }
+        //String match = reg_match.group(0);
+        match_length = reg_match.end - reg_match.start;
         if (_routes[i].isInterceptor) {
           _lInterceptor.insert(0, _routes[i]);
-        } else if (_routes[i].method.split(Cameleon.WORD_SEP).contains(m) && match.length > 0 && match.length > max_length) {
+        } else if (_routes[i].method.split(Cameleon.WORD_SEP).contains(m) && match_length > 0 && match_length > max_length) {
           idx = i;
-          max_length = match.length;
+          max_length = match_length;
           _lRouteObject.insert(0, _routes[i]);
         }
       }
     }
     _lRouteObject.insertAll(0, _lInterceptor);
-    print(_lRouteObject);
+    _printDebug(_lRouteObject);
     return _lRouteObject;
   }
 
@@ -178,7 +182,7 @@ class Cameleon {
   }
 
   void _addRouteIn(RouteObject r, HttpSession session) {
-    print(r);
+    _printDebug(r);
     if (session != null) {
       Cameleon.addSessionRoute(r, session);
     } else {
@@ -291,7 +295,7 @@ class Cameleon {
       for (var mdata in method.metadata) {
         if (mdata.reflectee is Route) {
           r = new RouteObject(new RegExp(transformToRegexp(base_url + mdata.reflectee.url.toString())),
-                                      mdata.reflectee.method.toString(),
+                                      mdata.reflectee.method,
                                       mdata.reflectee.others_param,
                                       im, method);
           if (mdata.reflectee.isInterceptor) {

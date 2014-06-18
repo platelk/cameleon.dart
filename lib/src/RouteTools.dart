@@ -35,3 +35,21 @@ class Redirect extends RouteTools {
 class Next extends RouteTools {
   
 }
+
+class Method {
+  static const String GET = "GET";
+  static const String POST = "POST";
+  static const String OPTION = "OPTION";
+}
+
+class HttpParams {
+  static const String Session = "Session";
+  static const String Route = "RouteObject";
+  static const String Request = "HttpRequest";
+  static const String Response = "HttpResponse";
+  static const String Server = "Server";
+  static const String File = "RawData";
+  static const String Data = "Data";
+  static const String PostData = "PostData";
+  static const String GetData = "GetData";
+}

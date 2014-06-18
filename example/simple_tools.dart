@@ -23,9 +23,9 @@ class WebApp {
     print("Admin zone");
   }
 
-  @Route("data", method: "GET,POST", others_param: "Data")
-  String data(Map d) {
-    print('Post request ${d}');
+  @Route(":id/data", method: const [Method.GET, Method.POST], others_param: "Data")
+  String data(String id, Map d) {
+    print('Post request id: ${id} ${d}');
     return "Post request";
   }
   
@@ -41,7 +41,7 @@ class WebApp {
 
 
 void main() {
-  Cameleon r = new Cameleon(4240);
+  Cameleon r = new Cameleon(4242);
   
   r.addRoute(new WebApp());
   r.setDebug(true, level: 3);
