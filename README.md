@@ -31,9 +31,20 @@ Actualy the library provide :
     * Creating route tree bind to a class
     * Creating route tree bind to a directory
     * Deleting route
-    * Add route to a specific HttpSession
     * Redirect
     * Create interceptor
+    * Get and Post Data
+```dart
+    @Route("data", method: "GET,POST", others_param: "PostData,GetData")
+      String data(Map post_data, Map get_data) {
+        print('request ${post_data}, ${get_data}');
+        return "Post request";
+      }
+```
+  * Session
+    * use can use session
+    * add route only for one session
+    * Store data on session
   * Callback
     * Get url parameter with `Regexp` group
     * Get contextual paramater

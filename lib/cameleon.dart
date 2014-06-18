@@ -54,7 +54,7 @@ class Cameleon {
   }
 
   List<RouteObject> _getMatchedObject(HttpRequest request, List<RouteObject> _routes) {
-    _printDebug("[Cameleon] HttpResquest: ${request.method} - [${request.uri.toString()}] (${request.requestedUri.host} on port ${request.requestedUri.port})");
+    print("[Cameleon] HttpResquest: ${request.method} - [${request.uri.toString()}] (${request.requestedUri.host} on port ${request.requestedUri.port})");
     String m = request.method;
     String url = request.uri.toString();
     HttpResponse res = request.response;
@@ -71,7 +71,7 @@ class Cameleon {
         String match = reg_match.group(0);
         if (_routes[i].isInterceptor) {
           _lInterceptor.insert(0, _routes[i]);
-        } else if (_routes[i].method.split(Cameleon.KEY_ROUTE_SESSION).contains(m) && match.length > 0 && match.length > max_length) {
+        } else if (_routes[i].method.split(Cameleon.WORD_SEP).contains(m) && match.length > 0 && match.length > max_length) {
           idx = i;
           max_length = match.length;
           _lRouteObject.insert(0, _routes[i]);
@@ -79,6 +79,7 @@ class Cameleon {
       }
     }
     _lRouteObject.insertAll(0, _lInterceptor);
+    print(_lRouteObject);
     return _lRouteObject;
   }
 
@@ -177,6 +178,7 @@ class Cameleon {
   }
 
   void _addRouteIn(RouteObject r, HttpSession session) {
+    print(r);
     if (session != null) {
       Cameleon.addSessionRoute(r, session);
     } else {

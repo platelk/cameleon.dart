@@ -5,7 +5,7 @@ class RouteTools {
 }
 
 /**
- * [Redirect] object is a return value that indicate to SDHS that it will need to redirect the user to [Redirect.url];
+ * [Redirect] object is a return value that indicate to Cameleon that it will need to redirect the user to [Redirect.url];
  * 
  * it can used as :
  *     @Route("login/:login/:mdp", others_param: "HttpSession")

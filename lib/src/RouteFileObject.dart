@@ -3,7 +3,7 @@ part of cameleon;
 typedef String FileCallBack(String fileContent);
 
 /**
- * [RouteFileObject] is a create by a call to [Sdhs.addFileRoute]
+ * [RouteFileObject] is a create by a call to [Cameleon.addFileRoute]
  */
 class RouteFileObject {
   static Map<String, String> _mimeTypeMap = {

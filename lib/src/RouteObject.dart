@@ -59,6 +59,14 @@ class RouteObject {
       }
     }
    // Adding lib param
+   bool asData = false;
+   bool needPostData = false;
+   bool needGetData = false;
+   bool needRawPostData = false;
+   Map post_data = new Map();
+   Map get_data = new Map();
+   Map data = new Map();
+   List rawData = new List();
    for (String k in this.others_param) {
      if (k == "RouteObject") {
        arg.add(this);
@@ -68,14 +76,62 @@ class RouteObject {
        arg.add(response);
      } else if (k == "HttpSession") {
        arg.add(r.session);
-     } else if (k == "Sdhs") {
+     } else if (k == "Server") {
        arg.add(s);
-     } else if (k == "Data") {
+     } else if (k == "PostData") {
+       asData = true;
+       needPostData = true;
+       arg.add(post_data);
+     } else if (k == "RawData") {
+       asData = true;
+       needPostData = true;
+       needRawPostData = true;
+       arg.add(rawData);
+     } else if (k == "GetData") {
+       asData = true;
+       needGetData = true;
        // TODO : getting POST and GET Data
+       arg.add(get_data);
+     } else if (k == "Data") {
+       asData = true;
+       needGetData = true;
+       needPostData = true;
+       // TODO : getting POST and GET Data
+       arg.add(data);
      } else {
        print("Error : $k didn't match");
      }
    }
-    return this._callFunction(arg);
+    if (asData == false) {
+      return this._callFunction(arg);
+    } else {
+      BytesBuilder builder = new BytesBuilder();
+      Completer c = new Completer();
+      r.listen((buffer) {
+        if (needPostData)
+          builder.add(buffer);
+      }).onDone(() {
+        print("done");
+        if (needPostData) {
+          if (needRawPostData) {
+            rawData = builder.takeBytes();
+          } else {
+            String playloadData = new String.fromCharCodes(builder.takeBytes());
+            playloadData.split("&").forEach((String e) {
+              List<String> l = e.split("=");
+              if (l.length > 1) {
+                post_data[Uri.decodeFull(l[0])] = Uri.decodeFull(l[1]);
+              }
+            });
+          }
+        }
+        if (needGetData) {
+          get_data = r.uri.queryParameters;
+        }
+        print(arg);
+        this._callFunction(arg).then((d) => c.complete(d));
+      });
+      return c.future;
+    }
   }
 }

@@ -22,9 +22,15 @@ class WebApp {
   void adminZone() {
     print("Admin zone");
   }
+
+  @Route("data", method: "GET,POST", others_param: "Data")
+  String data(Map d) {
+    print('Post request ${d}');
+    return "Post request";
+  }
   
   @Route(r"admin/index", others_param: "HttpSession")
-  String adminMainPage(HttpSession session) {
+  dynamic adminMainPage(HttpSession session) {
     if (session["isLogin"]) {
       print("AdminMainPage");
       return "Admin Zone";
