@@ -15,7 +15,7 @@ typedef String NotFoundHandler(HttpResponse);
 class Cameleon {
   static String KEY_ROUTE_SESSION = "__Cameleon_KEY_ROUTE_SESSION";
   static String WORD_SEP = ",";
-  String _version = "0.2.3";
+  String _version = "0.3.3";
   int port;
   String ip = "0.0.0.0";
   List<RouteObject> _routes;
@@ -41,7 +41,7 @@ class Cameleon {
 
   void _printDebug(data, {int level : 0}) {
     if (this._debugMode && this._debugModeLevel >= level) {
-      print(data);
+      print("[Cameleon]: ${data}");
     }
   }
 
@@ -54,7 +54,7 @@ class Cameleon {
   }
 
   List<RouteObject> _getMatchedObject(HttpRequest request, List<RouteObject> _routes) {
-    _printDebug("[Cameleon] HttpResquest: ${request.method} - [${request.uri.toString()}] (${request.requestedUri.host} on port ${request.requestedUri.port})");
+    _printDebug("HttpResquest: ${request.method} - [${request.uri.toString()}] (${request.requestedUri.host} on port ${request.requestedUri.port})");
     String m = request.method;
     String url = request.uri.toString();
     HttpResponse res = request.response;
@@ -89,6 +89,9 @@ class Cameleon {
 
   HttpResponse _setHttpResponse(HttpResponse res) {
     res.headers.set(HttpHeaders.SERVER, "Cameleon/" + this._version);
+    res.headers.add("Access-Control-Allow-Origin", "*, ");
+    res.headers.add("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    res.headers.add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.headers.date = new DateTime.now();
     return res;
   }
@@ -165,11 +168,11 @@ class Cameleon {
   }
 
   void _onHttpError() {
-    _printDebug("[Cameleon] HttpError!");
+    _printDebug("HttpError!");
   }
 
   void _onHttpHandleNotFound(HttpResponse response) {
-    _printDebug("[Cameleon] HttpNotFound !");
+    _printDebug("HttpNotFound !");
     response.statusCode = HttpStatus.NOT_FOUND;
     this._writeValue(this.handleNotFound(response), response);
   }
@@ -182,7 +185,8 @@ class Cameleon {
   }
 
   void _addRouteIn(RouteObject r, HttpSession session) {
-    _printDebug(r);
+    print(r);
+    _printDebug(r, level: 2);
     if (session != null) {
       Cameleon.addSessionRoute(r, session);
     } else {
